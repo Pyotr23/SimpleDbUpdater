@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Smo;
+using System;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using Microsoft.SqlServer;
 using System.Windows;
-using Microsoft.SqlServer.Management.Smo;
-using Microsoft.SqlServer.Management.Common;
+using WinForms = System.Windows.Forms;
 
 namespace SimpleDbUpdater
 {
@@ -86,7 +85,7 @@ namespace SimpleDbUpdater
 
         private string[] GetSqlFilePaths()
         {
-            var currentDirectory = Directory.GetCurrentDirectory();
+            var currentDirectory = tbxScriptsFolder.Text;
             var fileFullPaths = Directory.GetFiles(currentDirectory);
             var fileNames = fileFullPaths.Select(f => new FileInfo(f).Name).ToArray();
             var sqlFileNames = fileNames.Where(s => new FileInfo(s).Extension == ".sql").ToArray();
@@ -126,7 +125,12 @@ namespace SimpleDbUpdater
 
         private void BtnPath_Click(object sender, RoutedEventArgs e)
         {
-
+            using (var dialog = new WinForms.FolderBrowserDialog())
+            {
+                var result = dialog.ShowDialog();
+                if (result == WinForms.DialogResult.OK)
+                    tbxScriptsFolder.Text = dialog.SelectedPath;
+            }
         }
     }
 }
