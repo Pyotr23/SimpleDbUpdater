@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SalavatUpdate.Properties
+namespace SimpleDbUpdater.Properties
 {
 
 

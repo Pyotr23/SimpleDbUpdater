@@ -7,7 +7,7 @@ using System.Linq;
 using System.Windows;
 using WinForms = System.Windows.Forms;
 
-namespace SimpleDbUpdater
+namespace SimpleDbUpdater.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
