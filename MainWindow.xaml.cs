@@ -91,7 +91,7 @@ namespace SimpleDbUpdater
             var fileNames = fileFullPaths.Select(f => new FileInfo(f).Name).ToArray();
             var sqlFileNames = fileNames.Where(s => new FileInfo(s).Extension == ".sql").ToArray();
 
-            // Если скрипты именуются числом с постоянным количетством символов (001, 010, 205), то их пути создаются этой строчкой.
+            // Если скрипты именуются числом с постоянным количеством символов (001, 010, 205), то их пути создаются этой строчкой.
             var sortedSqlFilePathes = sqlFileNames.Select(n => Path.Combine(currentDirectory, n)).ToArray();
 
             // Если файлы именуются числом с переменным количеством символом (1_, 12_, 104_), то нужно переопределять сортировку так.
@@ -122,6 +122,11 @@ namespace SimpleDbUpdater
             string stringBeforeUnderscore = new string(charsBeforeUnderscore);
             int intBeforeUnderscore = int.Parse(stringBeforeUnderscore);
             return intBeforeUnderscore;
-        }        
+        }
+
+        private void BtnPath_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
