@@ -21,6 +21,7 @@ namespace SimpleDbUpdater.ViewModels
     {
         private string _scriptsFolderPath;
         private string _connectionString;
+        private string _databaseName;
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
         public string ScriptsFolderPath
@@ -31,9 +32,20 @@ namespace SimpleDbUpdater.ViewModels
         public string ConnectionString
         {
             get => _connectionString;
-            set => SetProperty(ref _connectionString, value);
+            set
+            {
+                SetProperty(ref _connectionString, value);
+                string newDatabaseName = GetDbNameFromConnectionString();
+                SetProperty(ref _databaseName, newDatabaseName, nameof(DatabaseName));                    
+            } 
         }
-        
+
+        public string DatabaseName
+        {
+            get => _databaseName;
+            set => _databaseName = value;
+        }
+
         public MainViewModel()
         {
             ExecuteScripts = new RelayCommand(
@@ -49,7 +61,7 @@ namespace SimpleDbUpdater.ViewModels
                         MessageBox.Show(ex.Message);
                     }                    
                 }, 
-                x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(ConnectionString)));
+                x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName)));
 
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
         }
