@@ -5,9 +5,11 @@ using SimpleDbUpdater.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -91,13 +93,13 @@ namespace SimpleDbUpdater.ViewModels
                     script = ModifyScript(script, i, dbName);
                     try
                     {
-                        server.ConnectionContext.ExecuteNonQuery(script);
-                        File.Delete(scriptPaths[i]);
+                        server.ConnectionContext.ExecuteNonQuery(script);                        
                     }
                     catch (Exception ex)
                     {
                         throw new Exception($"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}.");
                     }
+                    File.Delete(scriptPaths[i]);
                 }
                 MessageBox.Show("Обновление базы данных окончено.");
             }
@@ -105,20 +107,12 @@ namespace SimpleDbUpdater.ViewModels
                 MessageBox.Show("Скрипты не найдены.");
         }
 
-        // Парсер сработает, если перед названием БД нет пробела, сразу равно.
+        // Парсер "Database<любое количество пробелов(ЛКП)>=<ЛКП><искомое название БД без пробелов><ЛКП>;"
         private string GetDbNameFromConnectionString()
         {
-            string[] connectionSubstrings = ConnectionString.Split(new char[] { '=', ';', }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            int dbNameIndex = -1;
-            for (int i = 0; i < connectionSubstrings.Length; i++)
-            {
-                if (connectionSubstrings[i].Contains("Database"))
-                {
-                    dbNameIndex = ++i;
-                    break;
-                }
-            }
-            return connectionSubstrings[dbNameIndex];
+            var regex = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);            
+            var match = regex.Match(ConnectionString);
+            return match.Value;
         }
 
         private string ModifyScript(string script, int scriptIndex, string newDbName)
@@ -132,6 +126,18 @@ namespace SimpleDbUpdater.ViewModels
                 modifiedScript = new string(neededChars);
             }
             return modifiedScript;
+        }
+
+        private string ModifyFirstScript(string script)
+        {
+            var 
+        }
+
+        private bool IsBeginWithSpecifyingDatabaseName(string script)
+        {
+            var regex = new Regex(@"^\s*USE", RegexOptions.IgnoreCase);            
+            var match = regex.Match(script);            
+            return !string.IsNullOrEmpty(match.Value);
         }
     }
 }
