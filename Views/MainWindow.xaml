@@ -3,9 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SimpleDbUpdater"
+        xmlns:local="clr-namespace:SimpleDbUpdater.Converters"
         mc:Ignorable="d"
         Title="Обновление скриптами базы данных" SizeToContent="WidthAndHeight">
+    <Window.Resources>
+        <local:ConnectionStringToDatabaseNameConverter x:Key="connectionStringConverter"/>
+    </Window.Resources>
     <StackPanel>
         <Grid>
             <Label Content="Путь папки со скриптами:" Margin="10, 10, 10, 0"/>
@@ -14,7 +17,11 @@
         <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" Width="400" Margin="10, 0, 10, 10"/>
         <Label Content="Строка подключения:" Margin="10, 0, 10, 0"/>
         <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="400" Margin="10, 0, 10, 10"/>
-        <Button Name="btnStart" Content="Пуск" Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" HorizontalAlignment="Right" Margin="10, 0, 10, 5"/>
-        
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Название БД:" Margin="10, 0, 10, 0"/>
+            <TextBox Text="{Binding ElementName=tbxConnectionString, Path=Text, UpdateSourceTrigger=PropertyChanged, 
+                Converter={StaticResource connectionStringConverter}}" VerticalAlignment="Center" Width="150" IsReadOnly="True"/>
+        </StackPanel>
+        <Button Name="btnStart" Content="Пуск" Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" HorizontalAlignment="Right" Margin="10, 0, 10, 5"/>        
     </StackPanel>
 </Window>

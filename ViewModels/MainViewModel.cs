@@ -128,10 +128,10 @@ namespace SimpleDbUpdater.ViewModels
             return modifiedScript;
         }
 
-        private string ModifyFirstScript(string script)
-        {
-            var 
-        }
+        //private string ModifyFirstScript(string script)
+        //{
+        //    var 
+        //}
 
         private bool IsBeginWithSpecifyingDatabaseName(string script)
         {
