@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleDbUpdater"
         mc:Ignorable="d"
-        Title="Обновление скриптами базы данных" SizeToContent="WidthAndHeight">
+        SizeToContent="WidthAndHeight">
     <Window.Resources>
     </Window.Resources>
     <StackPanel>
