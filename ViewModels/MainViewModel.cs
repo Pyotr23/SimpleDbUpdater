@@ -92,17 +92,13 @@ namespace SimpleDbUpdater.ViewModels
             if (scriptPaths.Length != 0)
             {
                 var sqlConnection = new SqlConnection(ConnectionString);
-                var server = new Server(new ServerConnection(sqlConnection));
-                string dbName = GetDbNameFromConnectionString();
+                var server = new Server(new ServerConnection(sqlConnection));                
                 for (int i = 0; i < scriptPaths.Length; i++)
                 {
                     var filePath = scriptPaths[i];
-                    string script;
-                    using (var streamReader = new StreamReader(filePath))
-                    {
-                        script = streamReader.ReadToEnd();
-                    }
-                    script = ModifyScript(script, i, dbName);
+                    string script = GetScriptText(filePath);                    
+                    string databaseNameFromFirstRow = GetDatabaseNameFromFirstRow(script);
+                    script = ModifyScripts(script, i == 0, databaseNameFromFirstRow);                  
                     try
                     {
                         server.ConnectionContext.ExecuteNonQuery(script);                        
@@ -119,6 +115,26 @@ namespace SimpleDbUpdater.ViewModels
                 MessageBox.Show("Скрипты не найдены.");
         }
 
+        private string GetScriptText(string scriptPath)
+        {
+            using (var streamReader = new StreamReader(scriptPath))
+            {
+                return streamReader.ReadToEnd();
+            }
+        }
+
+        private string ModifyScripts(string script, bool isInitialScript, string databaseNameFromFirstRow)
+        {
+            if (isInitialScript)
+                return ModifyInitialScript(script, databaseNameFromFirstRow);
+            else
+            {
+                if (!string.IsNullOrEmpty(databaseNameFromFirstRow))
+                    return ModifyScript(script);
+                return script;
+            }
+        }
+
         // Парсер "Database<любое количество пробелов(ЛКП)>=<ЛКП><искомое название БД без пробелов><ЛКП>;"
         private string GetDbNameFromConnectionString()
         {
@@ -127,29 +143,30 @@ namespace SimpleDbUpdater.ViewModels
             return match.Value;
         }
 
-        private string ModifyScript(string script, int scriptIndex, string newDbName)
-        {
-            string modifiedScript;
-            if (scriptIndex == 0)
-                modifiedScript = script.Replace("DatabaseName", newDbName);
-            else
+        private string ModifyInitialScript(string script, string databaseNameFromFirstRow)
+        {            
+            if (string.IsNullOrEmpty(databaseNameFromFirstRow))
             {
-                var neededChars = script.SkipWhile(c => c != '/').ToArray();
-                modifiedScript = new string(neededChars);
+                script = $"USE {DatabaseName}\nGO\n{script}";
+                return script;
             }
-            return modifiedScript;
+            else
+                return script.Replace(databaseNameFromFirstRow, DatabaseName);
         }
 
-        //private string ModifyFirstScript(string script)
-        //{
-        //    var 
-        //}
-
-        private bool IsBeginWithSpecifyingDatabaseName(string script)
+        private string ModifyScript(string script)
         {
-            var regex = new Regex(@"^\s*USE", RegexOptions.IgnoreCase);            
+            var regex = new Regex(@"\A\s*USE\s*\S+\s*\n*\s*GO", RegexOptions.IgnoreCase);
+            var match = regex.Match(script);
+            int matchValueLength = match.Value.Length;
+            return script.Substring(matchValueLength);
+        }        
+
+        private string GetDatabaseNameFromFirstRow(string script)
+        {
+            var regex = new Regex(@"(?<=\A\s*USE\s*)\S+(?=\s*\n*\s*GO)", RegexOptions.IgnoreCase);            
             var match = regex.Match(script);            
-            return !string.IsNullOrEmpty(match.Value);
+            return match.Value;
         }
     }
 }
