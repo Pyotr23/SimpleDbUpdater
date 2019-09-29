@@ -154,8 +154,7 @@ namespace SimpleDbUpdater.ViewModels
                 {
                     var filePath = scriptPaths[i];
                     string script = GetScriptText(filePath);                    
-                    string databaseNameFromFirstRow = GetDatabaseNameFromFirstRow(script);
-                    script = ModifyScripts(script, i == 0, databaseNameFromFirstRow);                  
+                    script = ModifyScript(script);                  
                     try
                     {
                         server.ConnectionContext.ExecuteNonQuery(script);                        
@@ -178,19 +177,7 @@ namespace SimpleDbUpdater.ViewModels
             {
                 return streamReader.ReadToEnd();
             }
-        }
-
-        private string ModifyScripts(string script, bool isInitialScript, string databaseNameFromFirstRow)
-        {
-            if (isInitialScript)
-                return ModifyInitialScript(script, databaseNameFromFirstRow);
-            else
-            {
-                if (!string.IsNullOrEmpty(databaseNameFromFirstRow))
-                    return ModifyScript(script);
-                return script;
-            }
-        }
+        }        
 
         // Парсер "Database<любое количество пробелов(ЛКП)>=<ЛКП><искомое название БД без пробелов><ЛКП>;"
         private string GetDbNameFromConnectionString()
@@ -198,18 +185,7 @@ namespace SimpleDbUpdater.ViewModels
             var regex = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);            
             var match = regex.Match(ConnectionString);
             return match.Value;
-        }
-
-        private string ModifyInitialScript(string script, string databaseNameFromFirstRow)
-        {            
-            if (string.IsNullOrEmpty(databaseNameFromFirstRow))
-            {
-                script = $"USE {DatabaseName}\nGO\n{script}";
-                return script;
-            }
-            else
-                return script.Replace(databaseNameFromFirstRow, DatabaseName);
-        }
+        }          
 
         // Если скрипт начинается с USE <dbName> GO, то убираем.
         private string ModifyScript(string script)
@@ -218,13 +194,6 @@ namespace SimpleDbUpdater.ViewModels
             var match = regex.Match(script);
             int matchValueLength = match.Value.Length;
             return script.Substring(matchValueLength);
-        }        
-
-        private string GetDatabaseNameFromFirstRow(string script)
-        {
-            var regex = new Regex(@"(?<=\A\s*USE\s*)\S+(?=\s*\n*\s*GO)", RegexOptions.IgnoreCase);            
-            var match = regex.Match(script);            
-            return match.Value;
         }
     }
 }
