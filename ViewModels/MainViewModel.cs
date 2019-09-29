@@ -23,8 +23,21 @@ namespace SimpleDbUpdater.ViewModels
         private string _scriptsFolderPath;
         private string _connectionString;
         private string _databaseName;
+        private bool _dualLaunch;
+
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
+
+        public bool DualLaunch
+        {
+            get => _dualLaunch;
+            set
+            {
+                SetProperty(ref _dualLaunch, value);
+                SetSetting(nameof(DualLaunch), value.ToString());
+            }
+        }
+
         public string ScriptsFolderPath
         {
             get => _scriptsFolderPath;
@@ -34,6 +47,7 @@ namespace SimpleDbUpdater.ViewModels
                 SetSetting(nameof(ScriptsFolderPath), value);
             }  
         }
+
         public string ConnectionString
         {
             get => _connectionString;
@@ -54,8 +68,10 @@ namespace SimpleDbUpdater.ViewModels
 
         public MainViewModel()
         {
-            ScriptsFolderPath = ConfigurationManager.AppSettings["ScriptsFolderPath"];
-            ConnectionString = ConfigurationManager.AppSettings["ConnectionString"];
+            ScriptsFolderPath = ConfigurationManager.AppSettings[nameof(ScriptsFolderPath)];
+            ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];            
+            bool.TryParse(ConfigurationManager.AppSettings[nameof(DualLaunch)], out bool dualLaunch);
+            DualLaunch = dualLaunch;
 
             ExecuteScripts = new RelayCommand(
                 o => 
@@ -64,6 +80,8 @@ namespace SimpleDbUpdater.ViewModels
                     try
                     {
                         ExecuteAndDeleteNonQueryScripts(sqlFiles);
+                        if (DualLaunch)
+                            ExecuteAndDeleteNonQueryScripts(sqlFiles);
                     }
                     catch (Exception ex)
                     {

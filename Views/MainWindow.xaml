@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SimpleDbUpdater"
+        xmlns:local="clr-namespace:SimpleDbUpdater.Converters"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight">
     <Window.Resources>
+        <local:NotConverter x:Key="notConverter"/>
     </Window.Resources>
     <StackPanel>
         <Grid>
@@ -28,8 +29,8 @@
             </Grid.ColumnDefinitions>
             <Label Content="Двойной прогон:"/>
             <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Center">
-                <RadioButton Content="Да"/>
-                <RadioButton Content="Нет" Margin="25, 0, 0, 0"/>
+                <RadioButton Content="Да" IsChecked="{Binding Path=DualLaunch}"/>
+                <RadioButton Content="Нет" IsChecked="{Binding Path=DualLaunch, Converter={StaticResource notConverter}}" Margin="25, 0, 0, 0"/>
             </StackPanel>
             <Button Name="btnStart" Content="Пуск" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center"  
                     Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="10, 0, 10, 5"/>            
