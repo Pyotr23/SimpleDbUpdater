@@ -85,7 +85,10 @@ namespace SimpleDbUpdater.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        if (DualLaunch)
+                            MessageBox.Show($"Ошибка при вторичном выполнении скрипта.\n{ex.Message}");
+                        else
+                            MessageBox.Show($"Ошибка при первичном выполнении скрипта.\n{ex.Message}");
                     }                    
                 }, 
                 x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName)));
