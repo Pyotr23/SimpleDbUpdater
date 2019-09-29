@@ -16,10 +16,23 @@
         <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" Width="400" Margin="10, 0, 10, 10"/>
         <Label Content="Строка подключения:" Margin="10, 0, 10, 0"/>
         <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="400" Margin="10, 0, 10, 10"/>
-        <StackPanel Orientation="Horizontal">
-            <Label Content="Название БД:" Margin="10, 0, 10, 0"/>
+        <StackPanel Orientation="Horizontal" Margin="10, 10, 10, 0">
+            <Label Content="Название БД:"/>
             <TextBox Text="{Binding Path=DatabaseName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Width="150" IsReadOnly="True"></TextBox>
         </StackPanel>
-        <Button Name="btnStart" Content="Пуск" Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" HorizontalAlignment="Right" Margin="10, 0, 10, 5"/>        
+        <Grid Margin="10, 10, 10, 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Двойной прогон:"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Center">
+                <RadioButton Content="Да"/>
+                <RadioButton Content="Нет" Margin="25, 0, 0, 0"/>
+            </StackPanel>
+            <Button Name="btnStart" Content="Пуск" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center"  
+                    Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="10, 0, 10, 5"/>            
+        </Grid>       
     </StackPanel>
 </Window>
