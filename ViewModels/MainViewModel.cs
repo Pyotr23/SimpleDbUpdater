@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
 
 namespace SimpleDbUpdater.ViewModels
@@ -24,9 +25,16 @@ namespace SimpleDbUpdater.ViewModels
         private string _connectionString;
         private string _databaseName;
         private bool _dualLaunch;
+        private string _currentTime;
 
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
+
+        public string CurrentTime
+        {
+            get => _currentTime;
+            set => SetProperty(ref _currentTime, value);
+        }
 
         public bool DualLaunch
         {
@@ -72,6 +80,7 @@ namespace SimpleDbUpdater.ViewModels
             ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];            
             bool.TryParse(ConfigurationManager.AppSettings[nameof(DualLaunch)], out bool dualLaunch);
             DualLaunch = dualLaunch;
+            CurrentTime = DateTime.Now.ToLongTimeString();
 
             ExecuteScripts = new RelayCommand(
                 o => 
@@ -94,6 +103,16 @@ namespace SimpleDbUpdater.ViewModels
                 x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName)));
 
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
+
+            var dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+            dispatcherTimer.Start();
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            CurrentTime = DateTime.Now.ToLongTimeString();
         }
 
         private static void SetSetting(string key, string value)
