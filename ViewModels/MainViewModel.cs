@@ -4,6 +4,7 @@ using SimpleDbUpdater.Realizations;
 using SimpleDbUpdater.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
@@ -27,7 +28,11 @@ namespace SimpleDbUpdater.ViewModels
         public string ScriptsFolderPath
         {
             get => _scriptsFolderPath;
-            set => SetProperty(ref _scriptsFolderPath, value); 
+            set 
+            {
+                SetProperty(ref _scriptsFolderPath, value);
+                SetSetting(nameof(ScriptsFolderPath), value);
+            }  
         }
         public string ConnectionString
         {
@@ -36,7 +41,8 @@ namespace SimpleDbUpdater.ViewModels
             {
                 SetProperty(ref _connectionString, value);
                 string newDatabaseName = GetDbNameFromConnectionString();
-                SetProperty(ref _databaseName, newDatabaseName, nameof(DatabaseName));                    
+                SetProperty(ref _databaseName, newDatabaseName, nameof(DatabaseName));
+                SetSetting(nameof(ConnectionString), value);
             } 
         }
 
@@ -48,6 +54,9 @@ namespace SimpleDbUpdater.ViewModels
 
         public MainViewModel()
         {
+            ScriptsFolderPath = ConfigurationManager.AppSettings["ScriptsFolderPath"];
+            ConnectionString = ConfigurationManager.AppSettings["ConnectionString"];
+
             ExecuteScripts = new RelayCommand(
                 o => 
                 {                    
@@ -64,6 +73,14 @@ namespace SimpleDbUpdater.ViewModels
                 x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName)));
 
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
+        }
+
+        private static void SetSetting(string key, string value)
+        {
+            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            configuration.AppSettings.Settings[key].Value = value;
+            configuration.Save(ConfigurationSaveMode.Full, true);
+            ConfigurationManager.RefreshSection("appSettings");
         }
 
         private string GetScriptsFolderPath()
@@ -154,6 +171,7 @@ namespace SimpleDbUpdater.ViewModels
                 return script.Replace(databaseNameFromFirstRow, DatabaseName);
         }
 
+        // Если скрипт начинается с USE <dbName> GO, то убираем.
         private string ModifyScript(string script)
         {
             var regex = new Regex(@"\A\s*USE\s*\S+\s*\n*\s*GO", RegexOptions.IgnoreCase);
