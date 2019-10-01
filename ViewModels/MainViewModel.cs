@@ -87,10 +87,10 @@ namespace SimpleDbUpdater.ViewModels
                 {                    
                     var sqlFiles = GetSqlFilePaths();
                     try
-                    {
-                        ExecuteAndDeleteNonQueryScripts(sqlFiles);
+                    {                        
                         if (DualLaunch)
-                            ExecuteAndDeleteNonQueryScripts(sqlFiles);
+                            ExecuteAndDeleteNonQueryScripts(sqlFiles, false);
+                        ExecuteAndDeleteNonQueryScripts(sqlFiles, true);
                     }
                     catch (Exception ex)
                     {
@@ -144,7 +144,7 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths)
+        private void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
         {
             if (scriptPaths.Length != 0)
             {
@@ -163,7 +163,8 @@ namespace SimpleDbUpdater.ViewModels
                     {
                         throw new Exception($"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}.");
                     }
-                    File.Delete(scriptPaths[i]);
+                    if (deleteScript)
+                        File.Delete(scriptPaths[i]);
                 }
                 MessageBox.Show("Обновление базы данных окончено.");
             }
