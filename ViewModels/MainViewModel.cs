@@ -146,18 +146,17 @@ namespace SimpleDbUpdater.ViewModels
 
         private void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
         {
-            if (scriptPaths.Length != 0)
+            using (var sqlConnection = new SqlConnection(ConnectionString))
             {
-                var sqlConnection = new SqlConnection(ConnectionString);
-                var server = new Server(new ServerConnection(sqlConnection));                
+                var server = new Server(new ServerConnection(sqlConnection));
                 for (int i = 0; i < scriptPaths.Length; i++)
                 {
                     var filePath = scriptPaths[i];
-                    string script = GetScriptText(filePath);                    
-                    script = ModifyScript(script);                  
+                    string script = GetScriptText(filePath);
+                    script = ModifyScript(script);
                     try
                     {
-                        server.ConnectionContext.ExecuteNonQuery(script);                        
+                        server.ConnectionContext.ExecuteNonQuery(script);
                     }
                     catch (Exception ex)
                     {
@@ -166,10 +165,8 @@ namespace SimpleDbUpdater.ViewModels
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
                 }
-                MessageBox.Show("Обновление базы данных окончено.");
             }
-            else
-                MessageBox.Show("Скрипты не найдены.");
+            MessageBox.Show("Обновление базы данных окончено.");
         }
 
         private string GetScriptText(string scriptPath)
