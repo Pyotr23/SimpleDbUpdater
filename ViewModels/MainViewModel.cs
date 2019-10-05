@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
+using System.Threading;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -29,6 +30,8 @@ namespace SimpleDbUpdater.ViewModels
 
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
+
+        public bool AreScriptsExecuted { get; set; } = false;
 
         public string CurrentTime
         {
@@ -84,32 +87,40 @@ namespace SimpleDbUpdater.ViewModels
 
             ExecuteScripts = new RelayCommand(
                 o => 
-                {                    
-                    var sqlFiles = GetSqlFilePaths();
-                    try
-                    {                        
-                        if (DualLaunch)
-                            ExecuteAndDeleteNonQueryScripts(sqlFiles, false);
-                        ExecuteAndDeleteNonQueryScripts(sqlFiles, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (DualLaunch)
-                            MessageBox.Show($"Ошибка при вторичном выполнении скрипта.\n{ex.Message}");
-                        else
-                            MessageBox.Show($"Ошибка при первичном выполнении скрипта.\n{ex.Message}");
-                    }                    
-                }, 
-                x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName)));
+                RunningScripts(), 
+                x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName) || AreScriptsExecuted));
 
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
 
+            StartClock();
+        }
+
+        private void StartClock()
+        {
             var dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
         }
 
+        private void RunningScripts()
+        {
+            var sqlFiles = GetSqlFilePaths();
+            try
+            {
+                if (DualLaunch)
+                    ExecuteAndDeleteNonQueryScripts(sqlFiles, false);
+                ExecuteAndDeleteNonQueryScripts(sqlFiles, true);
+            }
+            catch (Exception ex)
+            {
+                if (DualLaunch)
+                    MessageBox.Show($"{ex.Message} (повторном).");
+                else
+                    MessageBox.Show(ex.Message);
+            }
+        }
+        
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToLongTimeString();
@@ -144,27 +155,36 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
+        private async void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
         {
             using (var sqlConnection = new SqlConnection(ConnectionString))
             {
-                var server = new Server(new ServerConnection(sqlConnection));
+                await sqlConnection.OpenAsync();                
                 for (int i = 0; i < scriptPaths.Length; i++)
                 {
                     var filePath = scriptPaths[i];
                     string script = GetScriptText(filePath);
                     script = ModifyScript(script);
-                    try
+                    using (var command = new SqlCommand(script, sqlConnection))
                     {
-                        server.ConnectionContext.ExecuteNonQuery(script);
+                        try
+                        {
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}");
+                        }
+                        finally
+                        {
+                            command.Connection.Close();
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}.");
-                    }
+                    
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
                 }
+                sqlConnection.Close();
             }
             MessageBox.Show("Обновление базы данных окончено.");
         }
