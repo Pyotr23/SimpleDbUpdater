@@ -28,12 +28,26 @@ namespace SimpleDbUpdater.ViewModels
         private string _databaseName;
         private bool _dualLaunch;
         private string _currentTime;
+        private int _scriptsNumber;
+        private int _templateScriptsNumber;
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
 
         public bool AreScriptsExecuted { get; set; } = false;
+
+        public int ScriptsNumber
+        {
+            get => _scriptsNumber;
+            set => SetProperty(ref _scriptsNumber, value);
+        }
+
+        public int TemplateScriptsNumber
+        {
+            get => _templateScriptsNumber;
+            set => SetProperty(ref _templateScriptsNumber, value);
+        }
 
         public string CurrentTime
         {
@@ -132,6 +146,16 @@ namespace SimpleDbUpdater.ViewModels
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToLongTimeString();
+            if (Directory.Exists(ScriptsFolderPath))
+            {
+                var scripts = Directory.EnumerateFiles(ScriptsFolderPath).Where(f => new FileInfo(f).Extension == ".sql").ToArray();
+                ScriptsNumber = scripts.Length;                
+            }
+        }
+
+        private int GetTemplateScriptsNumber(string[] scripts)
+        {
+            scripts.
         }
 
         private static void SetSetting(string key, string value)
@@ -162,6 +186,8 @@ namespace SimpleDbUpdater.ViewModels
             var sortedSqlFilePathes = sqlFileNames.Select(n => Path.Combine(ScriptsFolderPath, n)).ToArray();
             return sortedSqlFilePathes;
         }
+
+        
 
         private async void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
         {
