@@ -17,6 +17,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
 using System.Threading;
+using System.Diagnostics;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -28,6 +29,7 @@ namespace SimpleDbUpdater.ViewModels
         private bool _dualLaunch;
         private string _currentTime;
 
+        public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
 
@@ -38,14 +40,14 @@ namespace SimpleDbUpdater.ViewModels
             get => _currentTime;
             set => SetProperty(ref _currentTime, value);
         }
-
+        
         public bool DualLaunch
         {
             get => _dualLaunch;
             set
             {
                 SetProperty(ref _dualLaunch, value);
-                SetSetting(nameof(DualLaunch), value.ToString());
+                SetSetting(nameof(DualLaunch), value.ToString());                
             }
         }
 
@@ -55,7 +57,7 @@ namespace SimpleDbUpdater.ViewModels
             set 
             {
                 SetProperty(ref _scriptsFolderPath, value);
-                SetSetting(nameof(ScriptsFolderPath), value);
+                SetSetting(nameof(ScriptsFolderPath), value);                
             }  
         }
 
@@ -88,11 +90,17 @@ namespace SimpleDbUpdater.ViewModels
             ExecuteScripts = new RelayCommand(
                 o => 
                 RunningScripts(), 
-                x => !(string.IsNullOrEmpty(ScriptsFolderPath) || string.IsNullOrEmpty(DatabaseName) || AreScriptsExecuted));
+                x => Directory.Exists(ScriptsFolderPath) && !string.IsNullOrEmpty(DatabaseName) && !AreScriptsExecuted);
 
+            OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
 
             StartClock();
+        }
+
+        private void OpenFolder(string folderPath)
+        {
+            Process.Start(folderPath);
         }
 
         private void StartClock()
