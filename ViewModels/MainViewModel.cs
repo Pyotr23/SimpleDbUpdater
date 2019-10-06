@@ -104,7 +104,7 @@ namespace SimpleDbUpdater.ViewModels
             ExecuteScripts = new RelayCommand(
                 o => 
                 RunningScripts(), 
-                x => Directory.Exists(ScriptsFolderPath) && !string.IsNullOrEmpty(DatabaseName) && !AreScriptsExecuted);
+                x => TemplateScriptsNumber != 0 && !string.IsNullOrEmpty(DatabaseName) && !AreScriptsExecuted);
 
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
@@ -148,14 +148,19 @@ namespace SimpleDbUpdater.ViewModels
             CurrentTime = DateTime.Now.ToLongTimeString();
             if (Directory.Exists(ScriptsFolderPath))
             {
-                var scripts = Directory.EnumerateFiles(ScriptsFolderPath).Where(f => new FileInfo(f).Extension == ".sql").ToArray();
-                ScriptsNumber = scripts.Length;                
+                var scriptsNames = Directory.EnumerateFiles(ScriptsFolderPath)
+                    .Where(f => new FileInfo(f).Extension == ".sql")
+                    .Select(x => new FileInfo(x).Name).ToArray();
+                ScriptsNumber = scriptsNames.Length;
+                TemplateScriptsNumber = scriptsNames.Count(x => IsTemplateScriptName(x));
             }
         }
 
-        private int GetTemplateScriptsNumber(string[] scripts)
+        private bool IsTemplateScriptName(string scriptName)
         {
-            scripts.
+            var regex = new Regex(@"^\d+?_.*");
+            string matchValue = regex.Match(scriptName).Value;
+            return !string.IsNullOrEmpty(matchValue);
         }
 
         private static void SetSetting(string key, string value)

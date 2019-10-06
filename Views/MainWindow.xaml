@@ -25,7 +25,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
                 <Label Content="Количество скриптов с верным названием:"/>
-                <TextBox Width="50" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding Path=TemplateScriptsNumber}" IsReadOnly="True" Width="50" VerticalAlignment="Center"/>
             </StackPanel>
             <Label Content="Строка подключения:" Margin="10, 0, 10, 0"/>
             <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="500" Margin="10, 0, 10, 10"/>
