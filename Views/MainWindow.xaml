@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleDbUpdater.Converters"
         mc:Ignorable="d"
-        SizeToContent="WidthAndHeight">
+        SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
     <Window.Resources>
         <local:NotConverter x:Key="notConverter"/>
     </Window.Resources>
@@ -17,28 +17,37 @@
                     <Button Name="btnOpenFolder" Content="Открыть" Command="{Binding Path=OpenScriptsFolderPath}" Width="70"/>
                     <Button Name="btnPath" Content="Выбрать" Command="{Binding Path=SetScriptsFolderPath}" Width="70" Margin="10, 0, 0, 0"/>
                 </StackPanel>
-            </Grid>
-            <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" Width="400" Margin="10, 0, 10, 10"/>
+            </Grid>            
+            <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" Width="500" Margin="10, 0, 10, 10"/>
+            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
+                <Label Content="Общее количество скриптов:"/>
+                <TextBox Width="50" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
+                <Label Content="Количество скриптов с верным названием:"/>
+                <TextBox Width="50" VerticalAlignment="Center"/>
+            </StackPanel>
             <Label Content="Строка подключения:" Margin="10, 0, 10, 0"/>
-            <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="400" Margin="10, 0, 10, 10"/>
-            <StackPanel Orientation="Horizontal" Margin="10, 10, 10, 0">
+            <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="500" Margin="10, 0, 10, 10"/>
+            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
                 <Label Content="Название БД:"/>
                 <TextBox Text="{Binding Path=DatabaseName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Width="150" IsReadOnly="True"></TextBox>
             </StackPanel>
-            <Grid Margin="10, 10, 10, 0">
+            <Grid Margin="10, 0, 10, 0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="3*"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Label Content="Двойной прогон:"/>
-                <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Center">
-                    <RadioButton Content="Да" IsChecked="{Binding Path=DualLaunch}"/>
-                    <RadioButton Content="Нет" IsChecked="{Binding Path=DualLaunch, Converter={StaticResource notConverter}}" Margin="25, 0, 0, 0"/>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Двойной прогон:"/>                    
+                    <RadioButton Content="Да" IsChecked="{Binding Path=DualLaunch}" Margin="10, 0, 0, 0" VerticalAlignment="Center"/>
+                    <RadioButton Content="Нет" IsChecked="{Binding Path=DualLaunch, Converter={StaticResource notConverter}}" Margin="10, 0, 0, 0" 
+                                 VerticalAlignment="Center"/>                                        
                 </StackPanel>
-                <Button Name="btnStart" Content="Пуск" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center"  
-                    Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="10, 0, 10, 5"/>
+                <Button Name="btnStart" Content="Пуск" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"  
+                    Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="10, 0, 0, 5"/>
             </Grid>
+            
         </StackPanel>
         <TextBlock Text="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" Margin="0, 0, 10, 0" HorizontalAlignment="Right"/>
     </DockPanel>       
