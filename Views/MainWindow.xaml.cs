@@ -23,7 +23,7 @@ namespace SimpleDbUpdater.Views
             DataContext = new MainViewModel();
             string majorVersion = Assembly.GetExecutingAssembly().GetName().Version.Major.ToString();
             string minorVersion = Assembly.GetExecutingAssembly().GetName().Version.Minor.ToString();
-            Title = $"Обновление БД {majorVersion}.{minorVersion}";
+            Title = $"Обновление БД {majorVersion}.{minorVersion}";            
         }                 
     }
 }

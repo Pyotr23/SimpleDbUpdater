@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows.Media;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -30,12 +31,21 @@ namespace SimpleDbUpdater.ViewModels
         private string _currentTime;
         private int _scriptsNumber;
         private int _templateScriptsNumber;
+        private static SolidColorBrush _indianRedColor = new SolidColorBrush(Colors.IndianRed);
+        private static SolidColorBrush _limeGreenColor = new SolidColorBrush(Colors.LimeGreen);
+        private SolidColorBrush _connectionColor = _indianRedColor;
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
 
         public bool AreScriptsExecuted { get; set; } = false;
+
+        public SolidColorBrush ConnectionColor
+        {
+            get => _connectionColor;
+            set => SetProperty(ref _connectionColor, value);
+        }
 
         public int ScriptsNumber
         {
@@ -104,7 +114,7 @@ namespace SimpleDbUpdater.ViewModels
             ExecuteScripts = new RelayCommand(
                 o => 
                 RunningScripts(), 
-                x => TemplateScriptsNumber != 0 && !string.IsNullOrEmpty(DatabaseName) && !AreScriptsExecuted);
+                x => TemplateScriptsNumber != 0 && ConnectionColor == _limeGreenColor && !AreScriptsExecuted);
 
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
@@ -154,6 +164,21 @@ namespace SimpleDbUpdater.ViewModels
                 ScriptsNumber = scriptsNames.Length;
                 TemplateScriptsNumber = scriptsNames.Count(x => IsTemplateScriptName(x));
             }
+            if (!string.IsNullOrEmpty(ConnectionString))
+            {
+                using (var connection = new SqlConnection(ConnectionString))
+                {
+                    try
+                    {
+                        connection.Open();
+                        ConnectionColor = _limeGreenColor;
+                    }
+                    catch
+                    {
+                        ConnectionColor = _indianRedColor;
+                    }
+                }
+            }
         }
 
         private bool IsTemplateScriptName(string scriptName)
@@ -192,8 +217,6 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        
-
         private async void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
         {
             using (var sqlConnection = new SqlConnection(ConnectionString))
@@ -213,11 +236,7 @@ namespace SimpleDbUpdater.ViewModels
                         catch (Exception ex)
                         {
                             throw new Exception($"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}");
-                        }
-                        finally
-                        {
-                            command.Connection.Close();
-                        }
+                        }                        
                     }
                     
                     if (deleteScript)

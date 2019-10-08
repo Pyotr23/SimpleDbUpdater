@@ -29,8 +29,9 @@
             </StackPanel>
             <Label Content="Строка подключения:" Margin="10, 0, 10, 0"/>
             <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="500" Margin="10, 0, 10, 10"/>
-            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
+            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0"> 
                 <Label Content="Название БД:"/>
+                <Button Width="18" Height="18" Background="{Binding Path=ConnectionColor}"/>
                 <TextBox Text="{Binding Path=DatabaseName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Width="150" IsReadOnly="True"></TextBox>
             </StackPanel>
             <Grid Margin="10, 0, 10, 0">
