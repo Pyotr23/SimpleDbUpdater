@@ -224,6 +224,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\001_create_SysStringsLoc_table.sql" />
+    <Content Include="Resources\002_create_fn_GetStringLCID_function.sql" />
+    <Content Include="Resources\003_create_fn_GetStringLocUser_function.sql" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="appbar_sport_footbal.ico" />
