@@ -134,7 +134,7 @@ namespace SimpleDbUpdater.ViewModels
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
         }
-
+                
         private void RunningScripts()
         {
             var sqlFiles = GetSqlFilePaths();
@@ -153,7 +153,7 @@ namespace SimpleDbUpdater.ViewModels
             }
         }
         
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        private async void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToLongTimeString();
             if (Directory.Exists(ScriptsFolderPath))
@@ -170,7 +170,7 @@ namespace SimpleDbUpdater.ViewModels
                 {
                     try
                     {
-                        connection.Open();
+                        await connection.OpenAsync();
                         ConnectionColor = _limeGreenColor;
                     }
                     catch
