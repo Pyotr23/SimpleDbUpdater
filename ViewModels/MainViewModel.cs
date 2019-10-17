@@ -179,6 +179,7 @@ namespace SimpleDbUpdater.ViewModels
                     }
                 }
             }
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private bool IsTemplateScriptName(string scriptName)
