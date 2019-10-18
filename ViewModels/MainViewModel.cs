@@ -19,6 +19,7 @@ using WinForms = System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Media;
+using System.Data;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -135,22 +136,36 @@ namespace SimpleDbUpdater.ViewModels
             dispatcherTimer.Start();
         }
                 
-        private void RunningScripts()
+        private async void RunningScripts()
         {
-            var sqlFiles = GetSqlFilePaths();
-            try
+            AreScriptsExecuted = true;
+            using (var sqlConnection = new SqlConnection(ConnectionString))
+            using (var sqlCommand = new SqlCommand("dbo.sp_GetOne", sqlConnection))
             {
-                if (DualLaunch)
-                    ExecuteAndDeleteNonQueryScripts(sqlFiles, false);
-                ExecuteAndDeleteNonQueryScripts(sqlFiles, true);
+                sqlCommand.CommandType = CommandType.StoredProcedure;
+                //sqlCommand.Parameters.Add("@out", SqlDbType.Int).Direction = ParameterDirection.Output;               
+                sqlConnection.Open();
+                var rowsNumber = await sqlCommand.ExecuteNonQueryAsync();
+                var second = await sqlCommand.ExecuteNonQueryAsync();
+                //int output = Convert.ToInt32(sqlCommand.Parameters["@out"].Value);
+                sqlConnection.Close();
+                //DatabaseName = output.ToString();
             }
-            catch (Exception ex)
-            {
-                if (DualLaunch)
-                    MessageBox.Show($"{ex.Message} (повторном).");
-                else
-                    MessageBox.Show(ex.Message);
-            }
+            AreScriptsExecuted = false;
+            //var sqlFiles = GetSqlFilePaths();
+            //try
+            //{
+            //    if (DualLaunch)
+            //        ExecuteAndDeleteNonQueryScripts(sqlFiles, false);
+            //    ExecuteAndDeleteNonQueryScripts(sqlFiles, true);
+            //}
+            //catch (Exception ex)
+            //{
+            //    if (DualLaunch)
+            //        MessageBox.Show($"{ex.Message} (повторном).");
+            //    else
+            //        MessageBox.Show(ex.Message);
+            //}
         }
         
         private async void dispatcherTimer_Tick(object sender, EventArgs e)
