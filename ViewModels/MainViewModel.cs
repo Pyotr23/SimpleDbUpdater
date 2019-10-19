@@ -141,33 +141,22 @@ namespace SimpleDbUpdater.ViewModels
         private async void RunningScripts()
         {
             AreScriptsExecuted = true;
-            using (var sqlConnection = new SqlConnection(ConnectionString))
-            using (var sqlCommand = new SqlCommand("dbo.sp_GetOne", sqlConnection))
-            {
-                sqlCommand.CommandType = CommandType.StoredProcedure;
-                //sqlCommand.Parameters.Add("@out", SqlDbType.Int).Direction = ParameterDirection.Output;               
-                sqlConnection.Open();
-                var rowsNumber = await sqlCommand.ExecuteNonQueryAsync();
-                var second = await sqlCommand.ExecuteNonQueryAsync();
-                //int output = Convert.ToInt32(sqlCommand.Parameters["@out"].Value);
-                sqlConnection.Close();
-                //DatabaseName = output.ToString();
-            }
+
+            var sqlFiles = GetSqlFilePaths();
+            string errorMessage = string.Empty;
+
+            if (DualLaunch)
+                errorMessage = await GetErrorMessageAfterExecutingScriptsAsync(sqlFiles, false);
+
+            if (string.IsNullOrEmpty(errorMessage))
+                errorMessage = await GetErrorMessageAfterExecutingScriptsAsync(sqlFiles, true);
+            else
+                MessageBox.Show($"{errorMessage} (повторном).");
+
+            if (!string.IsNullOrEmpty(errorMessage))
+                MessageBox.Show(errorMessage);
+
             AreScriptsExecuted = false;
-            //var sqlFiles = GetSqlFilePaths();
-            //try
-            //{
-            //    if (DualLaunch)
-            //        ExecuteAndDeleteNonQueryScripts(sqlFiles, false);
-            //    ExecuteAndDeleteNonQueryScripts(sqlFiles, true);
-            //}
-            //catch (Exception ex)
-            //{
-            //    if (DualLaunch)
-            //        MessageBox.Show($"{ex.Message} (повторном).");
-            //    else
-            //        MessageBox.Show(ex.Message);
-            //}
         }
         
         private async void dispatcherTimer_Tick(object sender, EventArgs e)
@@ -233,11 +222,12 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private async void ExecuteAndDeleteNonQueryScripts(string[] scriptPaths, bool deleteScript)
+        private async Task<string> GetErrorMessageAfterExecutingScriptsAsync(string[] scriptPaths, bool deleteScript)
         {
+            string error = string.Empty;
             using (var sqlConnection = new SqlConnection(ConnectionString))
             {
-                await sqlConnection.OpenAsync();                
+                sqlConnection.OpenAsync().Wait();                
                 for (int i = 0; i < scriptPaths.Length; i++)
                 {
                     var filePath = scriptPaths[i];
@@ -247,11 +237,13 @@ namespace SimpleDbUpdater.ViewModels
                     {
                         try
                         {
-                            await command.ExecuteNonQueryAsync();
+                            int result = await command.ExecuteNonQueryAsync();
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}");
+                            sqlConnection.Close();
+                            error = $"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}";
+                            return error;
                         }                        
                     }
                     
@@ -260,7 +252,7 @@ namespace SimpleDbUpdater.ViewModels
                 }
                 sqlConnection.Close();
             }
-            MessageBox.Show("Обновление базы данных окончено.");
+            return error;
         }
 
         private string GetScriptText(string scriptPath)
