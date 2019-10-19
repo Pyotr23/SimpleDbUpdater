@@ -35,6 +35,8 @@ namespace SimpleDbUpdater.ViewModels
         private static SolidColorBrush _indianRedColor = new SolidColorBrush(Colors.IndianRed);
         private static SolidColorBrush _limeGreenColor = new SolidColorBrush(Colors.LimeGreen);
         private SolidColorBrush _connectionColor = _indianRedColor;
+        Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
+        Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
@@ -274,8 +276,10 @@ namespace SimpleDbUpdater.ViewModels
         // Парсер "Database<любое количество пробелов(ЛКП)>=<ЛКП><искомое название БД без пробелов><ЛКП>;"
         private string GetDbNameFromConnectionString()
         {
-            var regex = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);            
-            var match = regex.Match(ConnectionString);
+            var match = _regexDatabase.Match(ConnectionString);
+            if (match.Success)
+                return match.Value;
+            match = _regexInitialCatalog.Match(ConnectionString);
             return match.Value;
         }          
 
