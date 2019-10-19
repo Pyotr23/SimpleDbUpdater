@@ -181,7 +181,8 @@ namespace SimpleDbUpdater.ViewModels
                 ScriptsNumber = scriptsNames.Length;
                 TemplateScriptsNumber = scriptsNames.Count(x => IsTemplateScriptName(x));
             }
-            if (!string.IsNullOrEmpty(ConnectionString))
+            ConnectionColor = _indianRedColor;
+            if (!string.IsNullOrEmpty(DatabaseName))
             {
                 using (var connection = new SqlConnection(ConnectionString))
                 {
@@ -190,12 +191,9 @@ namespace SimpleDbUpdater.ViewModels
                         await connection.OpenAsync();
                         ConnectionColor = _limeGreenColor;
                     }
-                    catch
-                    {
-                        ConnectionColor = _indianRedColor;
-                    }
+                    catch { }
                 }
-            }
+            }            
             CommandManager.InvalidateRequerySuggested();
         }
 
