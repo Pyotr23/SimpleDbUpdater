@@ -67,25 +67,25 @@ namespace SimpleDbUpdater.ViewModels
             get => _currentTime;
             set => SetProperty(ref _currentTime, value);
         }
-        
+
         public bool DualLaunch
         {
             get => _dualLaunch;
             set
             {
                 SetProperty(ref _dualLaunch, value);
-                SetSetting(nameof(DualLaunch), value.ToString());                
+                SetSetting(nameof(DualLaunch), value.ToString());
             }
         }
 
         public string ScriptsFolderPath
         {
             get => _scriptsFolderPath;
-            set 
+            set
             {
                 SetProperty(ref _scriptsFolderPath, value);
-                SetSetting(nameof(ScriptsFolderPath), value);                
-            }  
+                SetSetting(nameof(ScriptsFolderPath), value);
+            }
         }
 
         public string ConnectionString
@@ -97,7 +97,7 @@ namespace SimpleDbUpdater.ViewModels
                 string newDatabaseName = GetDbNameFromConnectionString();
                 SetProperty(ref _databaseName, newDatabaseName, nameof(DatabaseName));
                 SetSetting(nameof(ConnectionString), value);
-            } 
+            }
         }
 
         public string DatabaseName
@@ -109,14 +109,14 @@ namespace SimpleDbUpdater.ViewModels
         public MainViewModel()
         {
             ScriptsFolderPath = ConfigurationManager.AppSettings[nameof(ScriptsFolderPath)];
-            ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];            
+            ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];
             bool.TryParse(ConfigurationManager.AppSettings[nameof(DualLaunch)], out bool dualLaunch);
             DualLaunch = dualLaunch;
             CurrentTime = DateTime.Now.ToLongTimeString();
 
             ExecuteScripts = new RelayCommand(
-                o => 
-                RunningScripts(), 
+                o =>
+                RunningScripts(),
                 x => TemplateScriptsNumber != 0 && ConnectionColor == _limeGreenColor && !AreScriptsExecuted);
 
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
@@ -133,33 +133,53 @@ namespace SimpleDbUpdater.ViewModels
         private void StartClock()
         {
             var dispatcherTimer = new DispatcherTimer();
-            dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
         }
-                
+
         private async void RunningScripts()
         {
             AreScriptsExecuted = true;
 
-            var sqlFiles = GetSqlFilePaths();
+            var sqlFilesWithCorrectName = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
             string errorMessage = string.Empty;
 
             if (DualLaunch)
-                errorMessage = await GetErrorMessageAfterExecutingScriptsAsync(sqlFiles, false);
-
-            if (string.IsNullOrEmpty(errorMessage))
-                errorMessage = await GetErrorMessageAfterExecutingScriptsAsync(sqlFiles, true);
+            {
+                errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName);
+                if (string.IsNullOrEmpty(errorMessage))
+                {
+                    errorMessage = await GetErrorAfterExecutingAndDeletingScriptsAsync(sqlFilesWithCorrectName);
+                    if (!string.IsNullOrEmpty(errorMessage))
+                        ShowRerunMessageBox(errorMessage);
+                }
+                else
+                    ShowMessageBox(errorMessage);
+            }
             else
-                MessageBox.Show($"{errorMessage} (повторном).");
-
-            if (!string.IsNullOrEmpty(errorMessage))
-                MessageBox.Show(errorMessage);
-
+            {
+                errorMessage = await GetErrorAfterExecutingAndDeletingScriptsAsync(sqlFilesWithCorrectName);
+                if (!string.IsNullOrEmpty(errorMessage))
+                    ShowMessageBox(errorMessage);
+            }             
             AreScriptsExecuted = false;
         }
-        
-        private async void dispatcherTimer_Tick(object sender, EventArgs e)
+
+        private void ShowMessageBox(string errorMessage)
+        {
+            string[] errorParts = errorMessage.Split('\n');
+            MessageBox.Show(errorParts[0], errorParts[1], MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void ShowRerunMessageBox(string errorMessage)
+        {
+            string[] errorParts = errorMessage.Split('\n');
+            string text = $"Ошибка при повторном выполнении скрипта.\n{errorParts[0]}";
+            MessageBox.Show(text, errorParts[1], MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private async void DispatcherTimer_Tick(object sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToLongTimeString();
             if (Directory.Exists(ScriptsFolderPath))
@@ -182,7 +202,7 @@ namespace SimpleDbUpdater.ViewModels
                     }
                     catch { }
                 }
-            }            
+            }
             CommandManager.InvalidateRequerySuggested();
         }
 
@@ -214,7 +234,7 @@ namespace SimpleDbUpdater.ViewModels
         }
 
         private string[] GetSqlFilePaths()
-        {            
+        {
             var fileFullPaths = Directory.GetFiles(ScriptsFolderPath);
             var fileNames = fileFullPaths.Select(f => new FileInfo(f).Name).ToArray();
             var sqlFileNames = fileNames.Where(s => new FileInfo(s).Extension == ".sql").ToArray();
@@ -222,7 +242,7 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private async Task<string> GetErrorMessageAfterExecutingScriptsAsync(string[] scriptPaths, bool deleteScript)
+        private async Task<string> GetErrorAfterExecutingScriptsAsync(string[] scriptPaths)
         {
             string error = string.Empty;
             using (var sqlConnection = new SqlConnection(ConnectionString))
@@ -242,13 +262,41 @@ namespace SimpleDbUpdater.ViewModels
                         catch (Exception ex)
                         {
                             sqlConnection.Close();
-                            error = $"{ex.Message}\nОшибка при выполнении скрипта {Path.GetFileName(filePath)}";
+                            error = $"{ex.Message}\nОшибка, скрипт \"{Path.GetFileName(filePath)}\"";
                             return error;
                         }                        
-                    }
-                    
-                    if (deleteScript)
-                        File.Delete(scriptPaths[i]);
+                    }                    
+                }
+                sqlConnection.Close();
+            }
+            return error;
+        }
+
+        private async Task<string> GetErrorAfterExecutingAndDeletingScriptsAsync(string[] scriptPaths)
+        {
+            string error = string.Empty;
+            using (var sqlConnection = new SqlConnection(ConnectionString))
+            {
+                sqlConnection.OpenAsync().Wait();
+                for (int i = 0; i < scriptPaths.Length; i++)
+                {
+                    var filePath = scriptPaths[i];
+                    string script = GetScriptText(filePath);
+                    script = ModifyScript(script);
+                    using (var command = new SqlCommand(script, sqlConnection))
+                    {
+                        try
+                        {
+                            int result = await command.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            sqlConnection.Close();
+                            error = $"{ex.Message}\nОшибка, скрипт \"{Path.GetFileName(filePath)}\"";
+                            return error;
+                        }
+                    }                    
+                    File.Delete(scriptPaths[i]);
                 }
                 sqlConnection.Close();
             }
