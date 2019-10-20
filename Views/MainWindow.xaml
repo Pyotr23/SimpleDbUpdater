@@ -48,8 +48,11 @@
                 <Button Name="btnStart" Content="Пуск" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"  
                     Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="10, 0, 0, 5"/>
             </Grid>
-            
-        </StackPanel>
-        <TextBlock Text="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" Margin="0, 0, 10, 0" HorizontalAlignment="Right"/>
+            <Grid>
+                <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
+                <TextBlock Text="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 
+                           Margin="0, 0, 10, 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </StackPanel>        
     </DockPanel>       
 </Window>

@@ -32,11 +32,18 @@ namespace SimpleDbUpdater.ViewModels
         private string _currentTime;
         private int _scriptsNumber;
         private int _templateScriptsNumber;
+        private int _templateScriptsCountBeforeExecuting;
         private static SolidColorBrush _indianRedColor = new SolidColorBrush(Colors.IndianRed);
         private static SolidColorBrush _limeGreenColor = new SolidColorBrush(Colors.LimeGreen);
         private SolidColorBrush _connectionColor = _indianRedColor;
+        private double _progressBarValue = 0;
+
+
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
+
+        private delegate void ScriptHandler(int scriptNumber);
+        private event ScriptHandler ScriptIsExecuting;
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
@@ -48,6 +55,12 @@ namespace SimpleDbUpdater.ViewModels
         {
             get => _connectionColor;
             set => SetProperty(ref _connectionColor, value);
+        }
+
+        public double ProgressBarValue
+        {
+            get => _progressBarValue;
+            set => SetProperty(ref _progressBarValue, value);
         }
 
         public int ScriptsNumber
@@ -123,6 +136,8 @@ namespace SimpleDbUpdater.ViewModels
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
 
             StartClock();
+
+            ScriptIsExecuting += ChangeSlider;
         }
 
         private void OpenFolder(string folderPath)
@@ -141,16 +156,19 @@ namespace SimpleDbUpdater.ViewModels
         private async void RunningScripts()
         {
             AreScriptsExecuted = true;
+            _templateScriptsCountBeforeExecuting = _templateScriptsNumber;
 
             var sqlFilesWithCorrectName = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
             string errorMessage = string.Empty;
+            bool deleteScriptAfterExecuting = false;
 
             if (DualLaunch)
             {
-                errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName);
+                errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                 if (string.IsNullOrEmpty(errorMessage))
                 {
-                    errorMessage = await GetErrorAfterExecutingAndDeletingScriptsAsync(sqlFilesWithCorrectName);
+                    deleteScriptAfterExecuting = true;
+                    errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                     if (!string.IsNullOrEmpty(errorMessage))
                         ShowRerunMessageBox(errorMessage);
                 }
@@ -159,7 +177,8 @@ namespace SimpleDbUpdater.ViewModels
             }
             else
             {
-                errorMessage = await GetErrorAfterExecutingAndDeletingScriptsAsync(sqlFilesWithCorrectName);
+                deleteScriptAfterExecuting = true;
+                errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
             }             
@@ -242,7 +261,7 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private async Task<string> GetErrorAfterExecutingScriptsAsync(string[] scriptPaths)
+        private async Task<string> GetErrorAfterExecutingScriptsAsync(string[] scriptPaths, bool deleteScript)
         {
             string error = string.Empty;
             using (var sqlConnection = new SqlConnection(ConnectionString))
@@ -258,6 +277,7 @@ namespace SimpleDbUpdater.ViewModels
                         try
                         {
                             int result = await command.ExecuteNonQueryAsync();
+                            ScriptIsExecuting?.Invoke(i + 1);
                         }
                         catch (Exception ex)
                         {
@@ -265,42 +285,18 @@ namespace SimpleDbUpdater.ViewModels
                             error = $"{ex.Message}\nОшибка, скрипт \"{Path.GetFileName(filePath)}\"";
                             return error;
                         }                        
-                    }                    
+                    }   
+                    if (deleteScript)
+                        File.Delete(scriptPaths[i]);
                 }
                 sqlConnection.Close();
             }
             return error;
         }
 
-        private async Task<string> GetErrorAfterExecutingAndDeletingScriptsAsync(string[] scriptPaths)
+        private void ChangeSlider(int scriptNumber)
         {
-            string error = string.Empty;
-            using (var sqlConnection = new SqlConnection(ConnectionString))
-            {
-                sqlConnection.OpenAsync().Wait();
-                for (int i = 0; i < scriptPaths.Length; i++)
-                {
-                    var filePath = scriptPaths[i];
-                    string script = GetScriptText(filePath);
-                    script = ModifyScript(script);
-                    using (var command = new SqlCommand(script, sqlConnection))
-                    {
-                        try
-                        {
-                            int result = await command.ExecuteNonQueryAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            sqlConnection.Close();
-                            error = $"{ex.Message}\nОшибка, скрипт \"{Path.GetFileName(filePath)}\"";
-                            return error;
-                        }
-                    }                    
-                    File.Delete(scriptPaths[i]);
-                }
-                sqlConnection.Close();
-            }
-            return error;
+            ProgressBarValue = scriptNumber / _templateScriptsCountBeforeExecuting * 100;
         }
 
         private string GetScriptText(string scriptPath)
