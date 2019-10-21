@@ -292,20 +292,24 @@ namespace SimpleDbUpdater.ViewModels
                     string script = GetScriptText(filePath);
                     script = ModifyScript(script);
                     CurrentScriptName = Path.GetFileNameWithoutExtension(filePath);
-                    using (var command = new SqlCommand(script, sqlConnection))
+                    var scriptsPartsBetweenGo = SplitSqlStatements(script);
+                    foreach (var scriptsPart in scriptsPartsBetweenGo)
                     {
-                        try
+                        using (var command = new SqlCommand(scriptsPart, sqlConnection))
                         {
-                            int result = await command.ExecuteNonQueryAsync();
-                            ScriptIsExecuting?.Invoke(i + 1);
+                            try
+                            {
+                                int result = await command.ExecuteNonQueryAsync();                                
+                            }
+                            catch (Exception ex)
+                            {
+                                sqlConnection.Close();
+                                error = $"Ошибка, скрипт \"{Path.GetFileName(filePath)}\"\n{ex.Message}";
+                                return error;
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            sqlConnection.Close();
-                            error = $"Ошибка, скрипт \"{Path.GetFileName(filePath)}\"\n{ex.Message}";
-                            return error;
-                        }                        
-                    }   
+                    }
+                    ScriptIsExecuting?.Invoke(i + 1);
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
                 }                
@@ -341,10 +345,23 @@ namespace SimpleDbUpdater.ViewModels
         // Если скрипт начинается с USE <dbName> GO, то убираем.
         private string ModifyScript(string script)
         {
-            var regex = new Regex(@"\A\s*USE\s*\S+\s*\n*\s*GO", RegexOptions.IgnoreCase);
+            var regex = new Regex(@"\A\s*USE\s*\S+\s*\n*\s*GO[\r\n]*", RegexOptions.IgnoreCase);
             var match = regex.Match(script);
             int matchValueLength = match.Value.Length;
             return script.Substring(matchValueLength);
+        }
+
+        private static IEnumerable<string> SplitSqlStatements(string sqlScript)
+        {
+            var statements = Regex.Split(
+                    sqlScript,
+                    @"^GO.*",
+                    RegexOptions.Multiline |
+                    RegexOptions.IgnorePatternWhitespace |
+                    RegexOptions.IgnoreCase);            
+            return statements
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim(' ', '\r', '\n'));
         }
     }
 }
