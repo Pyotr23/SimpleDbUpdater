@@ -203,15 +203,17 @@ namespace SimpleDbUpdater.ViewModels
 
         private void ShowMessageBox(string errorMessage)
         {
-            string[] errorParts = errorMessage.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-            MessageBox.Show(errorParts[0], errorParts[1], MessageBoxButton.OK, MessageBoxImage.Error);
+            string errorTitle = new string(errorMessage.TakeWhile(c => c != '\n').ToArray());
+            string error = new string(errorMessage.SkipWhile(c => c != '\n').Skip(1).ToArray());
+            MessageBox.Show(error, errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void ShowRerunMessageBox(string errorMessage)
         {
-            string[] errorParts = errorMessage.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-            string text = $"Ошибка при повторном выполнении скрипта.\n{errorParts[0]}";
-            MessageBox.Show(text, errorParts[1], MessageBoxButton.OK, MessageBoxImage.Error);
+            string errorTitle = new string(errorMessage.TakeWhile(c => c != '\n').ToArray());
+            string error = new string(errorMessage.SkipWhile(c => c != '\n').Skip(1).ToArray());            
+            string errorWithRerunProposition = $"Ошибка при повторном выполнении скрипта.\n{error}";
+            MessageBox.Show(errorWithRerunProposition, errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private async void DispatcherTimer_Tick(object sender, EventArgs e)
@@ -278,7 +280,7 @@ namespace SimpleDbUpdater.ViewModels
         }
 
         private async Task<string> GetErrorAfterExecutingScriptsAsync(string[] scriptPaths, bool deleteScript)
-        {
+        {            
             string error = string.Empty;
             ScriptIsExecuting?.Invoke(0);
             using (var sqlConnection = new SqlConnection(ConnectionString))
@@ -300,7 +302,7 @@ namespace SimpleDbUpdater.ViewModels
                         catch (Exception ex)
                         {
                             sqlConnection.Close();
-                            error = $"{ex.Message}\nОшибка, скрипт \"{Path.GetFileName(filePath)}\"";
+                            error = $"Ошибка, скрипт \"{Path.GetFileName(filePath)}\"\n{ex.Message}";
                             return error;
                         }                        
                     }   
