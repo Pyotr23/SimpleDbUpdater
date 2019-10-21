@@ -20,6 +20,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Windows.Media;
 using System.Data;
+using System.Windows.Shell;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -37,7 +38,8 @@ namespace SimpleDbUpdater.ViewModels
         private static SolidColorBrush _limeGreenColor = new SolidColorBrush(Colors.LimeGreen);
         private SolidColorBrush _connectionColor = _indianRedColor;
         private double _progressBarValue = 0;
-
+        private double _itemProgressValue;
+        private string _currentScriptName;
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -50,6 +52,18 @@ namespace SimpleDbUpdater.ViewModels
         public ICommand ExecuteScripts { get; }
 
         public bool AreScriptsExecuted { get; set; } = false;
+
+        public string CurrentScriptName
+        {
+            get => _currentScriptName;
+            set => SetProperty(ref _currentScriptName, value);
+        }
+
+        public double ItemProgressValue
+        {
+            get => _itemProgressValue;
+            set => SetProperty(ref _itemProgressValue, value);
+        }
 
         public SolidColorBrush ConnectionColor
         {
@@ -87,7 +101,7 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _dualLaunch, value);
-                SetSetting(nameof(DualLaunch), value.ToString());
+                SaveAppSetting(nameof(DualLaunch), value.ToString());
             }
         }
 
@@ -97,7 +111,7 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _scriptsFolderPath, value);
-                SetSetting(nameof(ScriptsFolderPath), value);
+                SaveAppSetting(nameof(ScriptsFolderPath), value);
             }
         }
 
@@ -109,7 +123,7 @@ namespace SimpleDbUpdater.ViewModels
                 SetProperty(ref _connectionString, value);
                 string newDatabaseName = GetDbNameFromConnectionString();
                 SetProperty(ref _databaseName, newDatabaseName, nameof(DatabaseName));
-                SetSetting(nameof(ConnectionString), value);
+                SaveAppSetting(nameof(ConnectionString), value);
             }
         }
 
@@ -181,19 +195,21 @@ namespace SimpleDbUpdater.ViewModels
                 errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
-            }             
+            }
+            ItemProgressValue = 0;
+            CurrentScriptName = "";
             AreScriptsExecuted = false;
         }
 
         private void ShowMessageBox(string errorMessage)
         {
-            string[] errorParts = errorMessage.Split('\n');
+            string[] errorParts = errorMessage.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
             MessageBox.Show(errorParts[0], errorParts[1], MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void ShowRerunMessageBox(string errorMessage)
         {
-            string[] errorParts = errorMessage.Split('\n');
+            string[] errorParts = errorMessage.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
             string text = $"Ошибка при повторном выполнении скрипта.\n{errorParts[0]}";
             MessageBox.Show(text, errorParts[1], MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -232,11 +248,11 @@ namespace SimpleDbUpdater.ViewModels
             return !string.IsNullOrEmpty(matchValue);
         }
 
-        private static void SetSetting(string key, string value)
+        private static void SaveAppSetting(string key, string value)
         {
-            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            configuration.AppSettings.Settings[key].Value = value;
-            configuration.Save(ConfigurationSaveMode.Full, true);
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings[key].Value = value;
+            config.Save(ConfigurationSaveMode.Full, true);
             ConfigurationManager.RefreshSection("appSettings");
         }
 
@@ -264,14 +280,16 @@ namespace SimpleDbUpdater.ViewModels
         private async Task<string> GetErrorAfterExecutingScriptsAsync(string[] scriptPaths, bool deleteScript)
         {
             string error = string.Empty;
+            ScriptIsExecuting?.Invoke(0);
             using (var sqlConnection = new SqlConnection(ConnectionString))
             {
                 sqlConnection.OpenAsync().Wait();                
                 for (int i = 0; i < scriptPaths.Length; i++)
                 {
-                    var filePath = scriptPaths[i];
+                    string filePath = scriptPaths[i];
                     string script = GetScriptText(filePath);
                     script = ModifyScript(script);
+                    CurrentScriptName = Path.GetFileNameWithoutExtension(filePath);
                     using (var command = new SqlCommand(script, sqlConnection))
                     {
                         try
@@ -288,7 +306,7 @@ namespace SimpleDbUpdater.ViewModels
                     }   
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
-                }
+                }                
                 sqlConnection.Close();
             }
             return error;
@@ -296,7 +314,8 @@ namespace SimpleDbUpdater.ViewModels
 
         private void ChangeSlider(int scriptNumber)
         {
-            ProgressBarValue = scriptNumber / _templateScriptsCountBeforeExecuting * 100;
+            ItemProgressValue = scriptNumber / (double)_templateScriptsCountBeforeExecuting;
+            ProgressBarValue = ItemProgressValue * 100;            
         }
 
         private string GetScriptText(string scriptPath)

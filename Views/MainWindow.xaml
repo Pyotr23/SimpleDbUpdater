@@ -9,6 +9,9 @@
     <Window.Resources>
         <local:NotConverter x:Key="notConverter"/>
     </Window.Resources>
+    <Window.TaskbarItemInfo>        
+        <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>        
+    </Window.TaskbarItemInfo>
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <Grid>
@@ -50,6 +53,7 @@
             </Grid>
             <Grid>
                 <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
+                <TextBlock Text="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="15, 0, 0, 0"/>
                 <TextBlock Text="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 
                            Margin="0, 0, 10, 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
