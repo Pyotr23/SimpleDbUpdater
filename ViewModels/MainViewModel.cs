@@ -1,26 +1,19 @@
-﻿using Microsoft.SqlServer.Management.Common;
-using Microsoft.SqlServer.Management.Smo;
-using SimpleDbUpdater.Realizations;
-using SimpleDbUpdater.ViewModels;
+﻿using SimpleDbUpdater.Realizations;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
-using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
-using System.Threading;
-using System.Diagnostics;
-using System.Windows.Media;
-using System.Data;
-using System.Windows.Shell;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -302,8 +295,7 @@ namespace SimpleDbUpdater.ViewModels
                                 int result = await command.ExecuteNonQueryAsync();                                
                             }
                             catch (Exception ex)
-                            {
-                                sqlConnection.Close();
+                            {                                
                                 error = $"Ошибка, скрипт \"{Path.GetFileName(filePath)}\"\n{ex.Message}";
                                 return error;
                             }
@@ -312,8 +304,7 @@ namespace SimpleDbUpdater.ViewModels
                     ScriptIsExecuting?.Invoke(i + 1);
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
-                }                
-                sqlConnection.Close();
+                }               
             }
             return error;
         }
