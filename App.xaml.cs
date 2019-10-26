@@ -21,10 +21,10 @@ namespace SimpleDbUpdater
         {
             Skin = newSkin;
 
-            foreach (ResourceDictionary dictionary in Resources.MergedDictionaries)
-            {
-                if (dictionary is SkinResourceDictionary)
-            }
+            //foreach (ResourceDictionary dictionary in Resources.MergedDictionaries)
+            //{
+            //    if (dictionary is SkinResourceDictionary)
+            //}
         }
     }
 }

@@ -8,11 +8,17 @@
         SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
     <Window.Resources>
         <local:NotConverter x:Key="notConverter"/>
+        <Style x:Key="WhiteForeground" TargetType="{x:Type Control}">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style TargetType="Label" BasedOn="{StaticResource WhiteForeground}"/>
+        <Style TargetType="Button" BasedOn="{StaticResource WhiteForeground}"/>
+        <Style TargetType="RadioButton" BasedOn="{StaticResource WhiteForeground}"/>
     </Window.Resources>
     <Window.TaskbarItemInfo>        
         <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>        
     </Window.TaskbarItemInfo>
-    <DockPanel>
+    <DockPanel Background="DarkSlateGray">
         <StackPanel DockPanel.Dock="Top">
             <Grid>
                 <Label Content="Путь папки со скриптами:" Margin="10, 10, 10, 0"/>
@@ -21,7 +27,8 @@
                     <Button Name="btnPath" Content="Выбрать" Command="{Binding Path=SetScriptsFolderPath}" Width="70" Margin="10, 0, 0, 0"/>
                 </StackPanel>
             </Grid>            
-            <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" Width="500" Margin="10, 0, 10, 10"/>
+            <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" 
+                     Width="500" Margin="10, 0, 10, 10"/>
             <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
                 <Label Content="Общее количество скриптов:"/>
                 <TextBox Text="{Binding Path=ScriptsNumber}" IsReadOnly="True" Width="50" VerticalAlignment="Center"/>
