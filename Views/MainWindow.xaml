@@ -8,12 +8,23 @@
         SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
     <Window.Resources>
         <local:NotConverter x:Key="notConverter"/>
-        <Style x:Key="WhiteForeground" TargetType="{x:Type Control}">
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
-        <Style TargetType="Label" BasedOn="{StaticResource WhiteForeground}"/>
-        <Style TargetType="Button" BasedOn="{StaticResource WhiteForeground}"/>
-        <Style TargetType="RadioButton" BasedOn="{StaticResource WhiteForeground}"/>
+        <Style x:Key="BlackTheme" TargetType="{x:Type Control}">
+            <Setter Property="Foreground" Value="AntiqueWhite"/>
+            <Setter Property="FontFamily" Value="Comic Sans MS"/>            
+        </Style>         
+        <Style TargetType="TextBox" BasedOn="{StaticResource BlackTheme}">
+            <Setter Property="Background" Value="Gray"/>
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="3"/>
+                </Style>
+            </Style.Resources>
+        </Style>        
+        <Style TargetType="Label" BasedOn="{StaticResource BlackTheme}"/>
+        <Style TargetType="Button" BasedOn="{StaticResource BlackTheme}"/>
+        <Style TargetType="RadioButton" BasedOn="{StaticResource BlackTheme}"/>
+        <!--<Style TargetType="Border" BasedOn="{StaticResource CornerRadius}"/>-->
+        <!--<Style TargetType="TextBox" BasedOn="{StaticResource BlackTheme}"/>-->        
     </Window.Resources>
     <Window.TaskbarItemInfo>        
         <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>        
@@ -60,8 +71,8 @@
             </Grid>
             <Grid>
                 <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
-                <TextBlock Text="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="15, 0, 0, 0"/>
-                <TextBlock Text="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 
+                <Label Content="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="15, 0, 0, 0"/>
+                <Label Content="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 
                            Margin="0, 0, 10, 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
         </StackPanel>        
