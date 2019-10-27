@@ -33,6 +33,7 @@ namespace SimpleDbUpdater.ViewModels
         private double _progressBarValue = 0;
         private double _itemProgressValue;
         private string _currentScriptName;
+        private bool _isDarkTheme;
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -43,8 +44,20 @@ namespace SimpleDbUpdater.ViewModels
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
+        public ICommand AskAboutTheme { get; }
 
         public bool AreScriptsExecuted { get; set; } = false;
+                
+        public bool IsDarkTheme
+        {
+            get => _isDarkTheme;
+            set
+            {
+                _isDarkTheme = value;
+                SetProperty(ref _isDarkTheme, value);
+                SaveAppSetting(nameof(IsDarkTheme), value.ToString());
+            }                 
+        }
 
         public string CurrentScriptName
         {
@@ -130,6 +143,8 @@ namespace SimpleDbUpdater.ViewModels
         {
             ScriptsFolderPath = ConfigurationManager.AppSettings[nameof(ScriptsFolderPath)];
             ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];
+            bool.TryParse(ConfigurationManager.AppSettings[nameof(IsDarkTheme)], out bool isDarkTheme);
+            IsDarkTheme = isDarkTheme;
             bool.TryParse(ConfigurationManager.AppSettings[nameof(DualLaunch)], out bool dualLaunch);
             DualLaunch = dualLaunch;
             CurrentTime = DateTime.Now.ToLongTimeString();
@@ -141,10 +156,27 @@ namespace SimpleDbUpdater.ViewModels
 
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
+            AskAboutTheme = new RelayCommand(o => ReloadIfNeeding(), x => !AreScriptsExecuted);
 
             StartClock();
 
             ScriptIsExecuting += ChangeSlider;
+        }
+
+        private void ReloadIfNeeding()
+        {
+            var result = MessageBox.Show("Перезагрузить программу немедленно для изменения темы?",
+                    "Что дальше", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                IsDarkTheme = !IsDarkTheme;
+                Application.Current.Shutdown();
+                WinForms.Application.Restart();
+            }
+            else if (result == MessageBoxResult.No)
+            {
+                IsDarkTheme = !IsDarkTheme;
+            }
         }
 
         private void OpenFolder(string folderPath)

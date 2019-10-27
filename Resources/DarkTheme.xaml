@@ -6,7 +6,7 @@
         <Setter Property="FontFamily" Value="Comic Sans MS"/>
     </Style>
     <Style TargetType="TextBox" BasedOn="{StaticResource BlackThemeFont}">
-        <Setter Property="Background" Value="Gray"/>
+        <Setter Property="Background" Value="#505050"/>
         <Style.Resources>
             <Style TargetType="{x:Type Border}">
                 <Setter Property="CornerRadius" Value="3"/>
@@ -14,7 +14,7 @@
         </Style.Resources>
     </Style>
     <Style x:Key="MainBackground" TargetType="DockPanel">
-        <Setter Property="Background" Value="DarkSlateGray"/>
+        <Setter Property="Background" Value="#303030"/>
     </Style>
     <Style TargetType="Label" BasedOn="{StaticResource BlackThemeFont}"/>
     <Style TargetType="Button" BasedOn="{StaticResource BlackThemeFont}">

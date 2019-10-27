@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SimpleDbUpdater.ViewModels;
+using System;
 using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace SimpleDbUpdater
@@ -15,6 +12,12 @@ namespace SimpleDbUpdater
     /// </summary>
     public partial class App : Application
     {
-        public static Theme Theme { get; set; } = Theme.Light;
+        public static Theme Theme { get; set; } 
+        
+        public App()
+        {
+            bool.TryParse(ConfigurationManager.AppSettings[nameof(MainViewModel.IsDarkTheme)], out bool isDarkTheme);
+            Theme = isDarkTheme ? Theme.Dark : Theme.Light;
+        }       
     }
 }

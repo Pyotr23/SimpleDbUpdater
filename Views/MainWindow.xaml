@@ -14,6 +14,12 @@
         <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>        
     </Window.TaskbarItemInfo>
     <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Настройки">
+                <MenuItem Header="Тёмная тема" IsCheckable="True" Command="{Binding AskAboutTheme}" 
+                          IsChecked="{Binding IsDarkTheme, Mode=OneWay}"/>
+            </MenuItem>
+        </Menu>
         <StackPanel DockPanel.Dock="Top">
             <Grid>
                 <Label Content="Путь папки со скриптами:" Margin="10, 10, 10, 0"/>
