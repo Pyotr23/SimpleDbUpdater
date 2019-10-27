@@ -1,9 +1,14 @@
 ﻿<Application x:Class="SimpleDbUpdater.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:SimpleDbUpdater"
+             xmlns:local="clr-namespace:SimpleDbUpdater.Resources"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:SkinResourceDictionary LightTheme="Resources/LightTheme.xaml"/>
+                <local:SkinResourceDictionary DarkTheme="Resources/DarkTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

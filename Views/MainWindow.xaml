@@ -8,28 +8,12 @@
         SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
     <Window.Resources>
         <local:NotConverter x:Key="notConverter"/>
-        <Style x:Key="BlackTheme" TargetType="{x:Type Control}">
-            <Setter Property="Foreground" Value="AntiqueWhite"/>
-            <Setter Property="FontFamily" Value="Comic Sans MS"/>            
-        </Style>         
-        <Style TargetType="TextBox" BasedOn="{StaticResource BlackTheme}">
-            <Setter Property="Background" Value="Gray"/>
-            <Style.Resources>
-                <Style TargetType="{x:Type Border}">
-                    <Setter Property="CornerRadius" Value="3"/>
-                </Style>
-            </Style.Resources>
-        </Style>        
-        <Style TargetType="Label" BasedOn="{StaticResource BlackTheme}"/>
-        <Style TargetType="Button" BasedOn="{StaticResource BlackTheme}"/>
-        <Style TargetType="RadioButton" BasedOn="{StaticResource BlackTheme}"/>
-        <!--<Style TargetType="Border" BasedOn="{StaticResource CornerRadius}"/>-->
-        <!--<Style TargetType="TextBox" BasedOn="{StaticResource BlackTheme}"/>-->        
+        
     </Window.Resources>
     <Window.TaskbarItemInfo>        
         <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>        
     </Window.TaskbarItemInfo>
-    <DockPanel Background="DarkSlateGray">
+    <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <Grid>
                 <Label Content="Путь папки со скриптами:" Margin="10, 10, 10, 0"/>
