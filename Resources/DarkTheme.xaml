@@ -27,6 +27,17 @@
     </Style>
     <Style TargetType="RadioButton" BasedOn="{StaticResource BlackThemeFont}"/>
     <Style TargetType="DockPanel" BasedOn="{StaticResource MainBackground}"/>
+    <Style TargetType="Menu" BasedOn="{StaticResource BlackThemeFont}">
+        <Setter Property="Background" Value="DarkSlateBlue"/>
+        <!--<Style.Resources>
+            <Style TargetType="Separator">
+                <Setter Property="BorderBrush" Value="Black"/>
+            </Style>
+        </Style.Resources>-->
+    </Style>        
+    <Style TargetType="MenuItem" BasedOn="{StaticResource BlackThemeFont}">
+        <Setter Property="Background" Value="DarkSlateBlue"/>        
+    </Style>
     <Style TargetType="ProgressBar">
         <Setter Property="Background" Value="DarkSlateBlue"/>
         <Setter Property="Foreground" Value="DarkGreen"/>
