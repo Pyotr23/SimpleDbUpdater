@@ -63,7 +63,8 @@
             <Grid>
                 <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
                 <StackPanel Orientation="Horizontal">
-                    <fa:ImageAwesome Icon="Apple"  Width="13" Spin="True" SpinDuration="4" Margin="10, 0, 0, 0"/>
+                    <fa:ImageAwesome Icon="Apple"  Width="13" Spin="True" SpinDuration="{Binding SpinDuration, Mode=OneWay}" 
+                                     Margin="10, 0, 0, 0" Visibility="{Binding SpinnerVisibility, Mode=OneWay}"/>
                     <Label Content="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="10, 0, 0, 0"/>
                 </StackPanel>                
                 <Label Content="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 

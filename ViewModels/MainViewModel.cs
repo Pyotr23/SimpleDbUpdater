@@ -35,6 +35,9 @@ namespace SimpleDbUpdater.ViewModels
         private string _currentScriptName;
         private bool _isDarkTheme;
         private const int SqlCommandTimeout = 6000;
+        private int _spinDuration = 0;
+        private Visibility _spinnerVisibility = Visibility.Hidden;
+        private bool _areScriptsExecuted = false;
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -47,8 +50,42 @@ namespace SimpleDbUpdater.ViewModels
         public ICommand ExecuteScripts { get; }
         public ICommand AskAboutTheme { get; }
 
-        public bool AreScriptsExecuted { get; set; } = false;
-                
+        public Visibility SpinnerVisibility
+        {
+            get => _spinnerVisibility;
+            set
+            {
+                SetProperty(ref _spinnerVisibility, value);
+                if (value == Visibility.Visible)
+                    SpinDuration = 4;
+                else
+                    SpinDuration = 0;
+            }
+        }
+
+        public int SpinDuration
+        {
+            get => _spinDuration;
+            set => SetProperty(ref _spinDuration, value);            
+        }
+
+        public bool AreScriptsExecuted
+        {
+            get => _areScriptsExecuted;
+            set
+            {
+                _areScriptsExecuted = value;
+                if (value)
+                    SpinnerVisibility = Visibility.Visible;
+                else
+                {
+                    ItemProgressValue = 0;
+                    CurrentScriptName = "";
+                    SpinnerVisibility = Visibility.Hidden;
+                }
+            }
+        }
+
         public bool IsDarkTheme
         {
             get => _isDarkTheme;
@@ -167,17 +204,14 @@ namespace SimpleDbUpdater.ViewModels
         private void ReloadIfNeeding()
         {
             var result = MessageBox.Show("Перезагрузить программу немедленно для изменения темы?",
-                    "Что дальше", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                    "Что дальше", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            IsDarkTheme = !IsDarkTheme;
             if (result == MessageBoxResult.Yes)
             {
-                IsDarkTheme = !IsDarkTheme;
+                
                 Application.Current.Shutdown();
                 WinForms.Application.Restart();
-            }
-            else if (result == MessageBoxResult.No)
-            {
-                IsDarkTheme = !IsDarkTheme;
-            }
+            }            
         }
 
         private void OpenFolder(string folderPath)
@@ -195,7 +229,7 @@ namespace SimpleDbUpdater.ViewModels
 
         private async void RunningScripts()
         {
-            AreScriptsExecuted = true;
+            AreScriptsExecuted = true;            
             _templateScriptsCountBeforeExecuting = _templateScriptsNumber;
 
             var sqlFilesWithCorrectName = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
@@ -222,8 +256,7 @@ namespace SimpleDbUpdater.ViewModels
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
             }
-            ItemProgressValue = 0;
-            CurrentScriptName = "";
+            
             AreScriptsExecuted = false;
         }
 
