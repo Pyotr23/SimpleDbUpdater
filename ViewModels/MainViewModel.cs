@@ -34,6 +34,7 @@ namespace SimpleDbUpdater.ViewModels
         private double _itemProgressValue;
         private string _currentScriptName;
         private bool _isDarkTheme;
+        private const int SqlCommandTimeout = 6000;
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -324,6 +325,7 @@ namespace SimpleDbUpdater.ViewModels
                         {
                             try
                             {
+                                command.CommandTimeout = SqlCommandTimeout;
                                 int result = await command.ExecuteNonQueryAsync();                                
                             }
                             catch (Exception ex)
