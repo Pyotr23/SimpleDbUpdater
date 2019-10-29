@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:fa="http://schemas.fontawesome.io/icons/"
                     xmlns:local="clr-namespace:SimpleDbUpdater.Resources">
     <Style x:Key="BlackThemeFont" TargetType="{x:Type Control}">
         <Setter Property="Foreground" Value="AntiqueWhite"/>
@@ -36,5 +37,8 @@
     <Style TargetType="ProgressBar">
         <Setter Property="Background" Value="DarkSlateBlue"/>
         <Setter Property="Foreground" Value="DarkGreen"/>
+    </Style>
+    <Style TargetType="fa:ImageAwesome">
+        <Setter Property="Foreground" Value="AntiqueWhite"/>
     </Style>
 </ResourceDictionary>

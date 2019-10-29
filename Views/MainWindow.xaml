@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:SimpleDbUpdater.Converters"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
@@ -61,7 +62,10 @@
             </Grid>
             <Grid>
                 <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
-                <Label Content="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="15, 0, 0, 0"/>
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Icon="Apple"  Width="13" Spin="True" SpinDuration="4" Margin="10, 0, 0, 0"/>
+                    <Label Content="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="10, 0, 0, 0"/>
+                </StackPanel>                
                 <Label Content="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 
                            Margin="0, 0, 10, 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
