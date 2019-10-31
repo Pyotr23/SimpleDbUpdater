@@ -189,7 +189,7 @@ namespace SimpleDbUpdater.ViewModels
 
             ExecuteScripts = new RelayCommand(
                 o =>
-                RunningScripts(),
+                Task.Run(() => RunningScripts()),
                 x => TemplateScriptsNumber != 0 && ConnectionColor == _limeGreenColor && !AreScriptsExecuted);
 
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
@@ -227,7 +227,7 @@ namespace SimpleDbUpdater.ViewModels
             dispatcherTimer.Start();
         }
 
-        private async void RunningScripts()
+        private void RunningScripts()
         {
             AreScriptsExecuted = true;            
             _templateScriptsCountBeforeExecuting = _templateScriptsNumber;
@@ -238,11 +238,11 @@ namespace SimpleDbUpdater.ViewModels
 
             if (DualLaunch)
             {
-                errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
+                errorMessage = GetErrorAfterExecutingScripts(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                 if (string.IsNullOrEmpty(errorMessage))
                 {
                     deleteScriptAfterExecuting = true;
-                    errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
+                    errorMessage = GetErrorAfterExecutingScripts(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                     if (!string.IsNullOrEmpty(errorMessage))
                         ShowRerunMessageBox(errorMessage);
                 }
@@ -252,7 +252,7 @@ namespace SimpleDbUpdater.ViewModels
             else
             {
                 deleteScriptAfterExecuting = true;
-                errorMessage = await GetErrorAfterExecutingScriptsAsync(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
+                errorMessage = GetErrorAfterExecutingScripts(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
             }
@@ -338,13 +338,13 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private async Task<string> GetErrorAfterExecutingScriptsAsync(string[] scriptPaths, bool deleteScript)
+        private string GetErrorAfterExecutingScripts(string[] scriptPaths, bool deleteScript)
         {            
             string error = string.Empty;
             ScriptIsExecuting?.Invoke(0);
             using (var sqlConnection = new SqlConnection(ConnectionString))
             {
-                sqlConnection.OpenAsync().Wait();                
+                sqlConnection.Open();                
                 for (int i = 0; i < scriptPaths.Length; i++)
                 {
                     string filePath = scriptPaths[i];
@@ -359,7 +359,7 @@ namespace SimpleDbUpdater.ViewModels
                             try
                             {
                                 command.CommandTimeout = SqlCommandTimeout;
-                                int result = await command.ExecuteNonQueryAsync();                                
+                                command.ExecuteNonQuery();                                
                             }
                             catch (Exception ex)
                             {                                
