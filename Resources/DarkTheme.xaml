@@ -26,6 +26,20 @@
             </Style>
         </Style.Resources>
     </Style>
+    <Style x:Key="ConnectionButton" TargetType="Button">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="False"/>
+        </Style.Triggers>
+    </Style>
     <Style TargetType="RadioButton" BasedOn="{StaticResource BlackThemeFont}"/>
     <Style TargetType="DockPanel" BasedOn="{StaticResource MainBackground}"/>
     <Style TargetType="Menu" BasedOn="{StaticResource BlackThemeFont}">

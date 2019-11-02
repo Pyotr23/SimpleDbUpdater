@@ -9,10 +9,10 @@
         SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
     <Window.Resources>
         <local:NotConverter x:Key="notConverter"/>
-        
+
     </Window.Resources>
-    <Window.TaskbarItemInfo>        
-        <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>        
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding ItemProgressValue}"/>
     </Window.TaskbarItemInfo>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -28,7 +28,7 @@
                     <Button Name="btnOpenFolder" Content="Открыть" Command="{Binding Path=OpenScriptsFolderPath}" Width="70"/>
                     <Button Name="btnPath" Content="Выбрать" Command="{Binding Path=SetScriptsFolderPath}" Width="70" Margin="10, 0, 0, 0"/>
                 </StackPanel>
-            </Grid>            
+            </Grid>
             <TextBox Name="tbxScriptsFolder" Text="{Binding Path=ScriptsFolderPath, UpdateSourceTrigger=PropertyChanged}" 
                      Width="500" Margin="10, 0, 10, 10"/>
             <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
@@ -41,24 +41,40 @@
             </StackPanel>
             <Label Content="Строка подключения:" Margin="10, 0, 10, 0"/>
             <TextBox Name="tbxConnectionString" Text="{Binding Path=ConnectionString, UpdateSourceTrigger=PropertyChanged}" Width="500" Margin="10, 0, 10, 10"/>
-            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0"> 
+            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
                 <Label Content="Название БД:"/>
-                <Button Width="18" Height="18" Background="{Binding Path=ConnectionColor}"/>
+                <Button Width="18" Height="18" Background="{Binding Path=ConnectionColor}" Style="{StaticResource ConnectionButton}">
+                    <!--<Button.Style>                        
+                        <Style TargetType="{x:Type Button}">                            
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type Button}">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="False"/>                                
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>-->                    
+                </Button>
                 <TextBox Text="{Binding Path=DatabaseName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Width="150" IsReadOnly="True"></TextBox>
             </StackPanel>
             <Grid Margin="10, 0, 10, 0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="94*"/>
+                    <ColumnDefinition Width="281*"/>
+                    <ColumnDefinition Width="125*"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Двойной прогон:"/>                    
-                    <RadioButton Content="Да" IsChecked="{Binding Path=DualLaunch}" Margin="10, 0, 0, 0" VerticalAlignment="Center"/>
-                    <RadioButton Content="Нет" IsChecked="{Binding Path=DualLaunch, Converter={StaticResource notConverter}}" Margin="10, 0, 0, 0" 
-                                 VerticalAlignment="Center"/>                                        
+                <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Margin="0,0,0.2,-0.4">
+                    <Label Content="Двойной прогон:"/>
+                    <CheckBox VerticalAlignment="Center" IsChecked="{Binding DualLaunch}"/>
                 </StackPanel>
-                <Button Name="btnStart" Content="Пуск" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"  
-                    Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="10, 0, 0, 5"/>
+                <Button Name="btnStart" Content="Пуск" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"  
+                    Command="{Binding Path=ExecuteScripts}" FontWeight="Bold" Width="50" Margin="0,1,0,5.6"/>
             </Grid>
             <Grid>
                 <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
@@ -66,10 +82,10 @@
                     <fa:ImageAwesome Icon="Apple"  Width="13" Spin="True" SpinDuration="{Binding SpinDuration, Mode=OneWay}" 
                                      Margin="10, 0, 0, 0" Visibility="{Binding SpinnerVisibility, Mode=OneWay}"/>
                     <Label Content="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="10, 0, 0, 0"/>
-                </StackPanel>                
+                </StackPanel>
                 <Label Content="{Binding Path=CurrentTime, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Bottom" 
                            Margin="0, 0, 10, 0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
-        </StackPanel>        
-    </DockPanel>       
+        </StackPanel>
+    </DockPanel>
 </Window>

@@ -232,17 +232,17 @@ namespace SimpleDbUpdater.ViewModels
             AreScriptsExecuted = true;            
             _templateScriptsCountBeforeExecuting = _templateScriptsNumber;
 
-            var sqlFilesWithCorrectName = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
+            var sqlFileWithCorrectNames = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
             string errorMessage = string.Empty;
             bool deleteScriptAfterExecuting = false;
 
             if (DualLaunch)
             {
-                errorMessage = GetErrorAfterExecutingScripts(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
+                errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting);
                 if (string.IsNullOrEmpty(errorMessage))
                 {
                     deleteScriptAfterExecuting = true;
-                    errorMessage = GetErrorAfterExecutingScripts(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
+                    errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting);
                     if (!string.IsNullOrEmpty(errorMessage))
                         ShowRerunMessageBox(errorMessage);
                 }
@@ -252,7 +252,7 @@ namespace SimpleDbUpdater.ViewModels
             else
             {
                 deleteScriptAfterExecuting = true;
-                errorMessage = GetErrorAfterExecutingScripts(sqlFilesWithCorrectName, deleteScriptAfterExecuting);
+                errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting);
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
             }
