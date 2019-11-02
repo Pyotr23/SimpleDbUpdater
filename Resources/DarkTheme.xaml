@@ -40,6 +40,13 @@
             <Trigger Property="IsMouseOver" Value="False"/>
         </Style.Triggers>
     </Style>
+    <Style TargetType="CheckBox" BasedOn="{StaticResource BlackThemeFont}">
+        <Style.Resources>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="CornerRadius" Value="3"/>
+            </Style>
+        </Style.Resources>
+    </Style>
     <Style TargetType="RadioButton" BasedOn="{StaticResource BlackThemeFont}"/>
     <Style TargetType="DockPanel" BasedOn="{StaticResource MainBackground}"/>
     <Style TargetType="Menu" BasedOn="{StaticResource BlackThemeFont}">

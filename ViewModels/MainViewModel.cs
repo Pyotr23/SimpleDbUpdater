@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +14,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Tulpep.NotificationWindow;
 using WinForms = System.Windows.Forms;
 
 namespace SimpleDbUpdater.ViewModels
@@ -38,6 +40,7 @@ namespace SimpleDbUpdater.ViewModels
         private int _spinDuration = 0;
         private Visibility _spinnerVisibility = Visibility.Hidden;
         private bool _areScriptsExecuted = false;
+        private bool _deleteScriptsAfterExecute;
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -49,6 +52,16 @@ namespace SimpleDbUpdater.ViewModels
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
         public ICommand AskAboutTheme { get; }
+
+        public bool DeleteScriptsAfterExecute
+        {
+            get => _deleteScriptsAfterExecute;
+            set
+            {
+                SetProperty(ref _deleteScriptsAfterExecute, value);
+                SaveAppSetting(nameof(DeleteScriptsAfterExecute), value.ToString());
+            }             
+        }
 
         public Visibility SpinnerVisibility
         {
@@ -90,8 +103,7 @@ namespace SimpleDbUpdater.ViewModels
         {
             get => _isDarkTheme;
             set
-            {
-                _isDarkTheme = value;
+            {                
                 SetProperty(ref _isDarkTheme, value);
                 SaveAppSetting(nameof(IsDarkTheme), value.ToString());
             }                 
@@ -181,6 +193,8 @@ namespace SimpleDbUpdater.ViewModels
         {
             ScriptsFolderPath = ConfigurationManager.AppSettings[nameof(ScriptsFolderPath)];
             ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];
+            bool.TryParse(ConfigurationManager.AppSettings[nameof(DeleteScriptsAfterExecute)], out bool deleteScripts);
+            DeleteScriptsAfterExecute = deleteScripts;
             bool.TryParse(ConfigurationManager.AppSettings[nameof(IsDarkTheme)], out bool isDarkTheme);
             IsDarkTheme = isDarkTheme;
             bool.TryParse(ConfigurationManager.AppSettings[nameof(DualLaunch)], out bool dualLaunch);
@@ -230,19 +244,20 @@ namespace SimpleDbUpdater.ViewModels
         private void RunningScripts()
         {
             AreScriptsExecuted = true;            
-            _templateScriptsCountBeforeExecuting = _templateScriptsNumber;
+            _templateScriptsCountBeforeExecuting = DualLaunch ? TemplateScriptsNumber * 2 : TemplateScriptsNumber;
 
             var sqlFileWithCorrectNames = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
             string errorMessage = string.Empty;
-            bool deleteScriptAfterExecuting = false;
+            bool isRerun = false;
 
             if (DualLaunch)
             {
-                errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting);
+                bool deleteScriptAfterExecuting = false;
+                errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting, isRerun);
                 if (string.IsNullOrEmpty(errorMessage))
                 {
-                    deleteScriptAfterExecuting = true;
-                    errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting);
+                    isRerun = true;
+                    errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, DeleteScriptsAfterExecute, isRerun);
                     if (!string.IsNullOrEmpty(errorMessage))
                         ShowRerunMessageBox(errorMessage);
                 }
@@ -251,12 +266,11 @@ namespace SimpleDbUpdater.ViewModels
             }
             else
             {
-                deleteScriptAfterExecuting = true;
-                errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, deleteScriptAfterExecuting);
+                errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, DeleteScriptsAfterExecute, isRerun);
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
             }
-            
+
             AreScriptsExecuted = false;
         }
 
@@ -289,15 +303,17 @@ namespace SimpleDbUpdater.ViewModels
             ConnectionColor = _indianRedColor;
             if (!string.IsNullOrEmpty(DatabaseName))
             {
-                using (var connection = new SqlConnection(ConnectionString))
+                var dbConnectionBuilder = new DbConnectionStringBuilder();
+                try
                 {
-                    try
-                    {
+                    dbConnectionBuilder.ConnectionString = ConnectionString;
+                    using (var connection = new SqlConnection(ConnectionString))
+                    {                        
                         await connection.OpenAsync();
-                        ConnectionColor = _limeGreenColor;
+                        ConnectionColor = _limeGreenColor;                        
                     }
-                    catch { }
                 }
+                catch { }                
             }
             CommandManager.InvalidateRequerySuggested();
         }
@@ -338,10 +354,10 @@ namespace SimpleDbUpdater.ViewModels
             return sortedSqlFilePathes;
         }
 
-        private string GetErrorAfterExecutingScripts(string[] scriptPaths, bool deleteScript)
+        private string GetErrorAfterExecutingScripts(string[] scriptPaths, bool deleteScript, bool isRerun)
         {            
             string error = string.Empty;
-            ScriptIsExecuting?.Invoke(0);
+            ScriptIsExecuting?.Invoke(isRerun ? _templateScriptsCountBeforeExecuting / 2 : 0);
             using (var sqlConnection = new SqlConnection(ConnectionString))
             {
                 sqlConnection.Open();                
@@ -368,7 +384,10 @@ namespace SimpleDbUpdater.ViewModels
                             }
                         }
                     }
-                    ScriptIsExecuting?.Invoke(i + 1);
+                    int progressBarValue = isRerun
+                        ? i + 1 + _templateScriptsCountBeforeExecuting / 2
+                        : i + 1;
+                    ScriptIsExecuting?.Invoke(progressBarValue);
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
                 }               
