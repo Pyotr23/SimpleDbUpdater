@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductName="SimpleDbUpdater"?>
-  <?define ProductCode="2afb83d0-fb94-40a4-9b2b-00aec21b9112"?>
-  <?define ProductVersion="4.0.0.0"?>
-  <?define UpgradeCode="bf24b053-e1a1-4a22-9ca2-dbdfee588faf"?>
-  <?define Manufacturer="Pyotr Inc."?>
+  <?include Variables.wxi?>
 	<Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1049" Version="$(var.ProductVersion)" 
            Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -17,6 +13,7 @@
 
     <Feature Id="ProductFeature">
       <ComponentRef Id="ProductComponent" />
+      <ComponentRef Id="ShortcutComponent"/>
     </Feature>
 	</Product>
 
@@ -24,16 +21,12 @@
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLFOLDER" Name="$(var.ProductName)">          
-        </Directory>
+        </Directory>        
 			</Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ShortcutDir" Name="$(var.ProductName)">          
+        </Directory>
+      </Directory>
 		</Directory>
 	</Fragment>
-
-  <!--<Fragment>
-    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-      <Component Id="ProductComponent">
-        <File Id="FILE_MyProgramEXE" Source="$(var.SimpleDbUpdater.TargetDir)SimpleDbUpdater.exe" KeyPath="yes" />
-      </Component>
-    </ComponentGroup>
-  </Fragment>-->
 </Wix>
