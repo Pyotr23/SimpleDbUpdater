@@ -10,30 +10,30 @@
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
     
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-    <MediaTemplate />
+    <MediaTemplate EmbedCab="yes"/>
 
     <UIRef Id="WixUI_InstallDir"/>
-    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
     <Feature Id="ProductFeature">
-      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ProductComponent" />
     </Feature>
 	</Product>
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLLOCATION" Name="$(var.ProductName)">          
+        <Directory Id="INSTALLFOLDER" Name="$(var.ProductName)">          
         </Directory>
 			</Directory>
 		</Directory>
 	</Fragment>
 
-  <Fragment>
-    <ComponentGroup Id="ProductComponents" Directory="INSTALLLOCATION">
+  <!--<Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="ProductComponent">
         <File Id="FILE_MyProgramEXE" Source="$(var.SimpleDbUpdater.TargetDir)SimpleDbUpdater.exe" KeyPath="yes" />
       </Component>
     </ComponentGroup>
-  </Fragment>
+  </Fragment>-->
 </Wix>

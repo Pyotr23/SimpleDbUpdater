@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Fragment>
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.SimpleDbUpdater.TargetDir)">
+      <Component Id="ProductComponent" Guid="b11556a2-e066-4393-af5c-9c9230187eb2">
+        <File Id="SimpleDbUpdater.exe" Name="SimpleDbUpdater.exe"/>
+        <File Id="SimpleDbUpdater.exe.Config" Name="SimpleDbUpdater.exe.Config"/>
+        <File Id="FontAwesome.WPF.dll" Name="FontAwesome.WPF.dll"/>
+      </Component>
+    </DirectoryRef>
+	</Fragment>
+</Wix>
