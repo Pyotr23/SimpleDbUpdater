@@ -179,6 +179,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\NotConverter.cs" />
+    <Compile Include="Events\NewProgressBarValueEventsArgs.cs" />
+    <Compile Include="Managers\ProgressBarManager.cs" />
     <Compile Include="Realizations\RelayCommand.cs" />
     <Compile Include="Resources\SkinResourceDictionary.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />

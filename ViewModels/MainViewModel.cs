@@ -1,4 +1,6 @@
-﻿using SimpleDbUpdater.Realizations;
+﻿using SimpleDbUpdater.Events;
+using SimpleDbUpdater.Managers;
+using SimpleDbUpdater.Realizations;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -44,8 +46,7 @@ namespace SimpleDbUpdater.ViewModels
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
 
-        private delegate void ScriptHandler(int scriptNumber);
-        private event ScriptHandler ScriptIsExecuting;
+        public ProgressBarManager ProgressBarManager { get; } = ProgressBarManager.Instance;
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
@@ -210,8 +211,7 @@ namespace SimpleDbUpdater.ViewModels
             AskAboutTheme = new RelayCommand(o => ReloadIfNeeding(), x => !AreScriptsExecuted);
 
             StartClock();
-
-            ScriptIsExecuting += ChangeSlider;
+            ProgressBarManager.NewProgressBarValue += ChangeSlider;
         }
 
         private void ReloadIfNeeding()
@@ -356,7 +356,8 @@ namespace SimpleDbUpdater.ViewModels
         private string GetErrorAfterExecutingScripts(string[] scriptPaths, bool deleteScript, bool isRerun)
         {            
             string error = string.Empty;
-            ScriptIsExecuting?.Invoke(isRerun ? _templateScriptsCountBeforeExecuting / 2 : 0);
+            int startProgressBarValue = isRerun ? _templateScriptsCountBeforeExecuting / 2 : 0;            
+            ProgressBarManager.ChangeProgressBarValue(startProgressBarValue);
             using (var sqlConnection = new SqlConnection(ConnectionString))
             {
                 sqlConnection.Open();                
@@ -383,10 +384,10 @@ namespace SimpleDbUpdater.ViewModels
                             }
                         }
                     }
-                    int progressBarValue = isRerun
+                    int currentProgressBarValue = isRerun
                         ? i + 1 + _templateScriptsCountBeforeExecuting / 2
                         : i + 1;
-                    ScriptIsExecuting?.Invoke(progressBarValue);
+                    ProgressBarManager.ChangeProgressBarValue(currentProgressBarValue);
                     if (deleteScript)
                         File.Delete(scriptPaths[i]);
                 }               
@@ -394,9 +395,10 @@ namespace SimpleDbUpdater.ViewModels
             return error;
         }
 
-        private void ChangeSlider(int scriptNumber)
+        private void ChangeSlider(object sender, NewProgressBarValueEventsArgs e)
         {
-            ItemProgressValue = scriptNumber / (double)_templateScriptsCountBeforeExecuting;
+            int newValue = e.NewValue;
+            ItemProgressValue = newValue / (double)_templateScriptsCountBeforeExecuting;
             ProgressBarValue = ItemProgressValue * 100;            
         }
 
