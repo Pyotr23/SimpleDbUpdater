@@ -22,6 +22,8 @@
     <Compile Include="Files.wxs" />
     <Compile Include="Product.wxs" />
     <Compile Include="Shortcut.wxs" />
+    <Compile Include="UI_Sequence.wxs" />
+    <Compile Include="WixUI_Shortcuts.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUIExtension">
