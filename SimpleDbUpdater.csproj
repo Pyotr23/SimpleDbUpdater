@@ -155,6 +155,12 @@
     <Reference Include="Microsoft.SqlServer.WmiEnum, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.SqlServer.SqlManagementObjects.150.18178.0\lib\net45\Microsoft.SqlServer.WmiEnum.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>packages\Serilog.2.9.0\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -180,6 +186,7 @@
     </ApplicationDefinition>
     <Compile Include="Converters\NotConverter.cs" />
     <Compile Include="Events\NewProgressBarValueEventsArgs.cs" />
+    <Compile Include="Loggers\UpdaterLogger.cs" />
     <Compile Include="Managers\ProgressBarManager.cs" />
     <Compile Include="Realizations\RelayCommand.cs" />
     <Compile Include="Resources\SkinResourceDictionary.cs" />

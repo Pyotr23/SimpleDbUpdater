@@ -7,6 +7,8 @@
         <File Id="SimpleDbUpdater.exe" Name="SimpleDbUpdater.exe"/>
         <File Id="SimpleDbUpdater.exe.Config" Name="SimpleDbUpdater.exe.Config"/>
         <File Id="FontAwesome.WPF.dll" Name="FontAwesome.WPF.dll"/>
+        <File Id="Serilog.dll" Name="Serilog.dll"/>
+        <File Id="Serilog.Sinks.File.dll" Name="Serilog.Sinks.File.dll"/>
       </Component>
     </DirectoryRef>    
 	</Fragment>

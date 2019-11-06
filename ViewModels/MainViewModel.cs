@@ -1,6 +1,8 @@
 ﻿using SimpleDbUpdater.Events;
 using SimpleDbUpdater.Managers;
 using SimpleDbUpdater.Realizations;
+using Serilog;
+using Serilog.Core;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,11 +19,14 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
+using SimpleDbUpdater.Loggers;
 
 namespace SimpleDbUpdater.ViewModels
 {
     class MainViewModel : ViewModelBase
     {
+        private const string LogExtension = "log";
+
         private string _scriptsFolderPath;
         private string _connectionString;
         private string _databaseName;
@@ -47,6 +52,7 @@ namespace SimpleDbUpdater.ViewModels
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
 
         public ProgressBarManager ProgressBarManager { get; } = ProgressBarManager.Instance;
+        public Logger Log { get; }
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
@@ -189,8 +195,11 @@ namespace SimpleDbUpdater.ViewModels
             set => _databaseName = value;
         }
 
+        public Logger Logger { get; } = UpdaterLogger.Instance;
+
         public MainViewModel()
-        {
+        {            
+            Logger.Information("Программа запущена.");
             ScriptsFolderPath = ConfigurationManager.AppSettings[nameof(ScriptsFolderPath)];
             ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];
             bool.TryParse(ConfigurationManager.AppSettings[nameof(DeleteScriptsAfterExecute)], out bool deleteScripts);
@@ -212,7 +221,7 @@ namespace SimpleDbUpdater.ViewModels
 
             StartClock();
             ProgressBarManager.NewProgressBarValue += ChangeSlider;
-        }
+        }       
 
         private void ReloadIfNeeding()
         {
@@ -242,8 +251,18 @@ namespace SimpleDbUpdater.ViewModels
 
         private void RunningScripts()
         {
-            AreScriptsExecuted = true;            
-            _templateScriptsCountBeforeExecuting = DualLaunch ? TemplateScriptsNumber * 2 : TemplateScriptsNumber;
+            AreScriptsExecuted = true;
+
+            if (DualLaunch)
+            {
+                _templateScriptsCountBeforeExecuting = TemplateScriptsNumber * 2;
+                Logger.Information("Двойной запуск {TemplateScriptsNumber} скриптов.", TemplateScriptsNumber);
+            }
+            else
+            {
+                _templateScriptsCountBeforeExecuting = TemplateScriptsNumber;
+                Logger.Information("Запуск {TemplateScriptsNumber} скриптов.", TemplateScriptsNumber);
+            }                       
 
             var sqlFileWithCorrectNames = GetSqlFilePaths().Where(s => IsTemplateScriptName(new FileInfo(s).Name)).ToArray();
             string errorMessage = string.Empty;
@@ -270,6 +289,7 @@ namespace SimpleDbUpdater.ViewModels
                     ShowMessageBox(errorMessage);
             }
 
+            Logger.Information("Обновление базы данных окончено.");
             AreScriptsExecuted = false;
         }
 
@@ -368,6 +388,7 @@ namespace SimpleDbUpdater.ViewModels
                     script = ModifyScript(script);
                     CurrentScriptName = Path.GetFileNameWithoutExtension(filePath);
                     var scriptsPartsBetweenGo = SplitSqlStatements(script);
+                    Logger.Debug("Запуск cкрипта №{i} \"{CurrentScriptName}\"", i, CurrentScriptName);
                     foreach (var scriptsPart in scriptsPartsBetweenGo)
                     {
                         using (var command = new SqlCommand(scriptsPart, sqlConnection))
