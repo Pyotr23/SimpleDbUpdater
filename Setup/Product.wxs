@@ -12,7 +12,13 @@
     <Property Id="SHORTCUT_PROGRAMMENU">1</Property>
     <Property Id="SHORTCUT_DESKTOP">1</Property>
 
+    <WixVariable Id="WixUIDialogBmp" Value="Resources/welcome.bmp"/>
+    <WixVariable Id="WixUIBannerBmp" Value="Resources/top.bmp"/>
+
     <UIRef Id="UI_Sequence"/>
+
+    <Icon Id="icon.ico" SourceFile="Resources\appbar_sport_footbal.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
 
     <Feature Id="ProductFeature">
       <ComponentRef Id="ProductComponent" />
