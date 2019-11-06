@@ -9,15 +9,17 @@
     <MediaTemplate EmbedCab="yes"/>
         
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <Property Id="SHORTCUT_PROGRAMMENU">1</Property>
+    <Property Id="SHORTCUT_DESKTOP">1</Property>
+
+    <UIRef Id="UI_Sequence"/>
 
     <Feature Id="ProductFeature">
       <ComponentRef Id="ProductComponent" />
       <ComponentRef Id="ShortcutComponent"/>
       <ComponentRef Id="ApplicationShortcutDesktop"/>
     </Feature>
-	</Product>
 
-	<Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLFOLDER" Name="$(var.ProductName)">
@@ -29,5 +31,5 @@
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop"/>
     </Directory>
-	</Fragment>
+	</Product>	
 </Wix>
