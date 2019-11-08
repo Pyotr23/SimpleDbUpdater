@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:SimpleDbUpdater.Converters"
+        xmlns:ext="clr-namespace:SimpleDbUpdater.Extensions"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
     <Window.Resources>
@@ -19,6 +20,14 @@
             <MenuItem Header="Настройки">
                 <MenuItem Header="Тёмная тема" IsCheckable="True" Command="{Binding AskAboutTheme}" 
                           IsChecked="{Binding IsDarkTheme, Mode=OneWay}"/>
+                <MenuItem Header="Уровень логирования">
+                    <MenuItem Header="Verbose" ext:MenuItemExtensions.GroupName="LogLevels" IsCheckable="True" Command="{Binding ClickVerboseLogLevel}"/>
+                    <MenuItem Header="Debug" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickDebugLogLevel}"/>
+                    <MenuItem Header="Information" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickInformationLogLevel}"/>
+                    <MenuItem Header="Warning" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickWarningLogLevel}"/>
+                    <MenuItem Header="Error" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickErrorLogLevel}"/>
+                    <MenuItem Header="Fatal" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickFatalLogLevel}"/>                   
+                </MenuItem>
             </MenuItem>
         </Menu>
         <StackPanel DockPanel.Dock="Top">
@@ -66,7 +75,7 @@
             <Grid>
                 <ProgressBar Name="progressBar" HorizontalAlignment="Stretch" Height="20" Value="{Binding ProgressBarValue}"/>
                 <StackPanel Orientation="Horizontal">
-                    <fa:ImageAwesome Icon="Apple"  Width="13" Spin="True" SpinDuration="{Binding SpinDuration, Mode=OneWay}" 
+                    <fa:ImageAwesome Icon="Spinner"  Width="13" Spin="True" SpinDuration="{Binding SpinDuration, Mode=OneWay}" 
                                      Margin="10, 0, 0, 0" Visibility="{Binding SpinnerVisibility, Mode=OneWay}"/>
                     <Label Content="{Binding CurrentScriptName}" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic" Margin="10, 0, 0, 0"/>
                 </StackPanel>

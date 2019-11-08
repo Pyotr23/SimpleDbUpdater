@@ -186,6 +186,7 @@
     </ApplicationDefinition>
     <Compile Include="Converters\NotConverter.cs" />
     <Compile Include="Events\NewProgressBarValueEventsArgs.cs" />
+    <Compile Include="Extensions\MenuItemExtensions.cs" />
     <Compile Include="Loggers\UpdaterLogger.cs" />
     <Compile Include="Managers\ProgressBarManager.cs" />
     <Compile Include="Realizations\RelayCommand.cs" />

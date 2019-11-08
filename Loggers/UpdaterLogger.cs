@@ -32,7 +32,7 @@ namespace SimpleDbUpdater.Loggers
             }
         }
 
-        public LogEventLevel LogEventLevel 
+        public static LogEventLevel LogEventLevel 
         {
             get => _logEventLevel;
             set

@@ -1,8 +1,8 @@
 ﻿using SimpleDbUpdater.Events;
 using SimpleDbUpdater.Managers;
 using SimpleDbUpdater.Realizations;
-using Serilog;
 using Serilog.Core;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -52,12 +52,20 @@ namespace SimpleDbUpdater.ViewModels
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
 
         public ProgressBarManager ProgressBarManager { get; } = ProgressBarManager.Instance;
-        public Logger Log { get; }
+
+        public Logger Logger { get; } = UpdaterLogger.Instance;
 
         public ICommand OpenScriptsFolderPath { get; }
         public ICommand SetScriptsFolderPath { get; }
         public ICommand ExecuteScripts { get; }
         public ICommand AskAboutTheme { get; }
+
+        public ICommand ClickVerboseLogLevel { get; }
+        public ICommand ClickDebugLogLevel { get; }
+        public ICommand ClickInformationLogLevel { get; }
+        public ICommand ClickWarningLogLevel { get; }
+        public ICommand ClickErrorLogLevel { get; }
+        public ICommand ClickFatalLogLevel { get; }
 
         public bool DeleteScriptsAfterExecute
         {
@@ -193,9 +201,7 @@ namespace SimpleDbUpdater.ViewModels
         {
             get => _databaseName;
             set => _databaseName = value;
-        }
-
-        public Logger Logger { get; } = UpdaterLogger.Instance;
+        }        
 
         public MainViewModel()
         {            
@@ -219,6 +225,13 @@ namespace SimpleDbUpdater.ViewModels
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
             AskAboutTheme = new RelayCommand(o => ReloadIfNeeding(), x => !AreScriptsExecuted);
 
+            ClickVerboseLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Verbose);
+            ClickDebugLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Debug);
+            ClickInformationLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Information);
+            ClickWarningLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Warning);
+            ClickErrorLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Error);
+            ClickFatalLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Fatal);
+            
             StartClock();
             ProgressBarManager.NewProgressBarValue += ChangeSlider;
         }       
