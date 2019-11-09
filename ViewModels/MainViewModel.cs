@@ -25,8 +25,6 @@ namespace SimpleDbUpdater.ViewModels
 {
     class MainViewModel : ViewModelBase
     {
-        private const string LogExtension = "log";
-
         private string _scriptsFolderPath;
         private string _connectionString;
         private string _databaseName;
