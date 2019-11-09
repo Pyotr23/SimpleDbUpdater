@@ -31,6 +31,7 @@ namespace SimpleDbUpdater.Views
         
         private void LogRecordAboutClosing(object sender, CancelEventArgs e)
         {
+            Properties.Settings.Default.Save();
             UpdaterLogger.Instance.Information("Программа закрывается.");
         }
     }

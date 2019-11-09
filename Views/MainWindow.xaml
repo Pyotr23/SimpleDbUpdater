@@ -20,12 +20,18 @@
                 <MenuItem Header="Тёмная тема" IsCheckable="True" Command="{Binding AskAboutTheme}" 
                           IsChecked="{Binding IsDarkTheme, Mode=OneWay}"/>
                 <MenuItem Header="Уровень логирования">
-                    <MenuItem Header="Verbose" ext:MenuItemExtensions.GroupName="LogLevels" IsCheckable="True" Command="{Binding ClickVerboseLogLevel}"/>
-                    <MenuItem Header="Debug" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickDebugLogLevel}"/>
-                    <MenuItem Header="Information" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickInformationLogLevel}"/>
-                    <MenuItem Header="Warning" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickWarningLogLevel}"/>
-                    <MenuItem Header="Error" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickErrorLogLevel}"/>
-                    <MenuItem Header="Fatal" ext:MenuItemExtensions.GroupName="LogLevels"  IsCheckable="True" Command="{Binding ClickFatalLogLevel}"/>                   
+                    <MenuItem Header="Verbose" ext:MenuItemExtensions.GroupName="LogLevels" IsChecked="{Binding IsCheckedVerboseLevel}" 
+                              IsCheckable="True" Command="{Binding ClickVerboseLogLevel}"/>
+                    <MenuItem Header="Debug" ext:MenuItemExtensions.GroupName="LogLevels"  IsChecked="{Binding IsCheckedDebugLevel}" 
+                              IsCheckable="True" Command="{Binding ClickDebugLogLevel}"/>
+                    <MenuItem Header="Information" ext:MenuItemExtensions.GroupName="LogLevels" IsChecked="{Binding IsCheckedInformationLevel}"  
+                              IsCheckable="True" Command="{Binding ClickInformationLogLevel}"/>
+                    <MenuItem Header="Warning" ext:MenuItemExtensions.GroupName="LogLevels"  IsChecked="{Binding IsCheckedWarningLevel}" 
+                              IsCheckable="True" Command="{Binding ClickWarningLogLevel}"/>
+                    <MenuItem Header="Error" ext:MenuItemExtensions.GroupName="LogLevels"  IsChecked="{Binding IsCheckedErrorLevel}"
+                              IsCheckable="True" Command="{Binding ClickErrorLogLevel}"/>
+                    <MenuItem Header="Fatal" ext:MenuItemExtensions.GroupName="LogLevels" IsChecked="{Binding IsCheckedFatalLevel}"
+                              IsCheckable="True" Command="{Binding ClickFatalLogLevel}"/>                   
                 </MenuItem>
             </MenuItem>
         </Menu>

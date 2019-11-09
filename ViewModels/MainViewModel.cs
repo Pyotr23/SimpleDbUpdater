@@ -20,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
 using SimpleDbUpdater.Loggers;
+using SimpleDbUpdater.Properties;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -71,7 +72,7 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _deleteScriptsAfterExecute, value);
-                SaveAppSetting(nameof(DeleteScriptsAfterExecute), value.ToString());
+                Settings.Default[nameof(DeleteScriptsAfterExecute)] = value;
             }             
         }
 
@@ -117,7 +118,7 @@ namespace SimpleDbUpdater.ViewModels
             set
             {                
                 SetProperty(ref _isDarkTheme, value);
-                SaveAppSetting(nameof(IsDarkTheme), value.ToString());
+                Settings.Default[nameof(IsDarkTheme)] = value;
             }                 
         }
 
@@ -169,7 +170,7 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _dualLaunch, value);
-                SaveAppSetting(nameof(DualLaunch), value.ToString());
+                Settings.Default[nameof(DualLaunch)] = value;
             }
         }
 
@@ -179,7 +180,7 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _scriptsFolderPath, value);
-                SaveAppSetting(nameof(ScriptsFolderPath), value);
+                Settings.Default[nameof(ScriptsFolderPath)] = value;
             }
         }
 
@@ -191,7 +192,7 @@ namespace SimpleDbUpdater.ViewModels
                 SetProperty(ref _connectionString, value);
                 string newDatabaseName = GetDbNameFromConnectionString();
                 SetProperty(ref _databaseName, newDatabaseName, nameof(DatabaseName));
-                SaveAppSetting(nameof(ConnectionString), value);
+                Settings.Default[nameof(ConnectionString)] = value;
             }
         }
 
@@ -199,19 +200,92 @@ namespace SimpleDbUpdater.ViewModels
         {
             get => _databaseName;
             set => _databaseName = value;
-        }        
+        }
+
+        private bool _isCheckedVerboseLevel;
+        private bool _isCheckedDebugLevel;
+        private bool _isCheckedInformationLevel;
+        private bool _isCheckedWarningLevel;
+        private bool _isCheckedErrorLevel;
+        private bool _isCheckedFatalLevel;
+
+        public bool IsCheckedVerboseLevel
+        {
+            get => _isCheckedVerboseLevel;
+            set
+            {
+                SetProperty(ref _isCheckedVerboseLevel, value);
+                ClickVerboseLogLevel?.Execute(null);
+                Settings.Default["LogLevel"] = "Verbose";
+            }
+        }
+        
+        public bool IsCheckedDebugLevel
+        {
+            get => _isCheckedDebugLevel;
+            set
+            {
+                SetProperty(ref _isCheckedDebugLevel, value);
+                ClickDebugLogLevel?.Execute(null);
+                Settings.Default["LogLevel"] = "Debug";
+            }
+        }
+
+        public bool IsCheckedInformationLevel
+        {
+            get => _isCheckedInformationLevel;
+            set
+            {
+                SetProperty(ref _isCheckedInformationLevel, value);
+                ClickInformationLogLevel?.Execute(null);
+                Settings.Default["LogLevel"] = "Information";
+            }
+        }
+
+        public bool IsCheckedWarningLevel
+        {
+            get => _isCheckedWarningLevel;
+            set
+            {
+                SetProperty(ref _isCheckedWarningLevel, value);
+                ClickWarningLogLevel?.Execute(null);
+                Settings.Default["LogLevel"] = "Warning";
+            }
+        }
+
+        public bool IsCheckedErrorLevel
+        {
+            get => _isCheckedErrorLevel;
+            set
+            {
+                SetProperty(ref _isCheckedErrorLevel, value);
+                ClickErrorLogLevel?.Execute(null);
+                Settings.Default["LogLevel"] = "Error";
+            }
+        }
+
+        public bool IsCheckedFatalLevel
+        {
+            get => _isCheckedFatalLevel;
+            set
+            {
+                SetProperty(ref _isCheckedFatalLevel, value);
+                ClickFatalLogLevel?.Execute(null);
+                Settings.Default["LogLevel"] = "Fatal";
+            }
+        }
 
         public MainViewModel()
-        {            
+        {  
+            SetLogLevelFromSettings();
             Logger.Information("Программа запущена.");
-            ScriptsFolderPath = ConfigurationManager.AppSettings[nameof(ScriptsFolderPath)];
-            ConnectionString = ConfigurationManager.AppSettings[nameof(ConnectionString)];
-            bool.TryParse(ConfigurationManager.AppSettings[nameof(DeleteScriptsAfterExecute)], out bool deleteScripts);
-            DeleteScriptsAfterExecute = deleteScripts;
-            bool.TryParse(ConfigurationManager.AppSettings[nameof(IsDarkTheme)], out bool isDarkTheme);
-            IsDarkTheme = isDarkTheme;
-            bool.TryParse(ConfigurationManager.AppSettings[nameof(DualLaunch)], out bool dualLaunch);
-            DualLaunch = dualLaunch;
+
+            ScriptsFolderPath = (string)Settings.Default[nameof(ScriptsFolderPath)];
+            ConnectionString = (string)Settings.Default[nameof(ConnectionString)];
+            DeleteScriptsAfterExecute = (bool)Settings.Default[nameof(DeleteScriptsAfterExecute)];
+            IsDarkTheme = (bool)Settings.Default[nameof(IsDarkTheme)];
+            DualLaunch = (bool)Settings.Default[nameof(DualLaunch)];
+
             CurrentTime = DateTime.Now.ToLongTimeString();
 
             ExecuteScripts = new RelayCommand(
@@ -233,6 +307,31 @@ namespace SimpleDbUpdater.ViewModels
             StartClock();
             ProgressBarManager.NewProgressBarValue += ChangeSlider;
         }       
+
+        private void SetLogLevelFromSettings()
+        {
+            switch ((string)Settings.Default["LogLevel"])
+            {
+                case "Verbose":
+                    IsCheckedVerboseLevel = true;
+                    break;
+                case "Debug":
+                    IsCheckedDebugLevel = true;
+                    break;
+                case "Information":
+                    IsCheckedInformationLevel = true;
+                    break;
+                case "Warning":
+                    IsCheckedWarningLevel = true;
+                    break;
+                case "Error":
+                    IsCheckedErrorLevel = true;
+                    break;
+                case "Fatal":
+                    IsCheckedFatalLevel = true;
+                    break;
+            }
+        }
 
         private void ReloadIfNeeding()
         {
@@ -355,13 +454,13 @@ namespace SimpleDbUpdater.ViewModels
             return !string.IsNullOrEmpty(matchValue);
         }
 
-        private static void SaveAppSetting(string key, string value)
-        {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings[key].Value = value;
-            config.Save(ConfigurationSaveMode.Full, true);
-            ConfigurationManager.RefreshSection("appSettings");
-        }
+        //private static void SaveAppSetting(string key, string value)
+        //{
+        //    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+        //    config.AppSettings.Settings[key].Value = value;
+        //    config.Save(ConfigurationSaveMode.Full, true);
+        //    ConfigurationManager.RefreshSection("appSettings");
+        //}
 
         private string GetScriptsFolderPath()
         {
@@ -442,7 +541,6 @@ namespace SimpleDbUpdater.ViewModels
             }
         }        
 
-        // Парсер "Database<любое количество пробелов(ЛКП)>=<ЛКП><искомое название БД без пробелов><ЛКП>;"
         private string GetDbNameFromConnectionString()
         {
             var match = _regexDatabase.Match(ConnectionString);
