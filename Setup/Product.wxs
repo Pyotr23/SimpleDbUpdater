@@ -17,7 +17,7 @@
 
     <UIRef Id="UI_Sequence"/>
 
-    <Icon Id="icon.ico" SourceFile="Resources\appbar_sport_footbal.ico"/>
+    <Icon Id="icon.ico" SourceFile="Resources\dbicon.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
 
     <Feature Id="ProductFeature">

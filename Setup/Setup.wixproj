@@ -42,7 +42,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\appbar_sport_footbal.ico" />
+    <Content Include="Resources\dbicon.ico" />
     <Content Include="Resources\top.bmp" />
     <Content Include="Resources\welcome.bmp" />
     <Content Include="Variables.wxi" />
