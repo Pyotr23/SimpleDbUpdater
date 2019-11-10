@@ -1,6 +1,4 @@
-﻿using SimpleDbUpdater.ViewModels;
-using System;
-using System.Configuration;
+﻿using SimpleDbUpdater.Properties;
 using System.Windows;
 
 namespace SimpleDbUpdater
@@ -16,7 +14,7 @@ namespace SimpleDbUpdater
         
         public App()
         {
-            bool.TryParse(ConfigurationManager.AppSettings[nameof(MainViewModel.IsDarkTheme)], out bool isDarkTheme);
+            bool isDarkTheme = (bool)Settings.Default["IsDarkTheme"];
             Theme = isDarkTheme ? Theme.Dark : Theme.Light;
         }       
     }

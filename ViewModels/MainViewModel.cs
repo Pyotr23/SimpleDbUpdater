@@ -215,8 +215,11 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _isCheckedVerboseLevel, value);
-                ClickVerboseLogLevel?.Execute(null);
-                Settings.Default["LogLevel"] = "Verbose";
+                if (value)
+                {
+                    ClickVerboseLogLevel?.Execute(null);
+                    Settings.Default["LogLevel"] = "Verbose";
+                }                
             }
         }
         
@@ -226,8 +229,11 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _isCheckedDebugLevel, value);
-                ClickDebugLogLevel?.Execute(null);
-                Settings.Default["LogLevel"] = "Debug";
+                if (value)
+                {
+                    ClickDebugLogLevel?.Execute(null);
+                    Settings.Default["LogLevel"] = "Debug";
+                }                
             }
         }
 
@@ -237,8 +243,11 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _isCheckedInformationLevel, value);
-                ClickInformationLogLevel?.Execute(null);
-                Settings.Default["LogLevel"] = "Information";
+                if (value)
+                {
+                    ClickInformationLogLevel?.Execute(null);
+                    Settings.Default["LogLevel"] = "Information";
+                }                
             }
         }
 
@@ -248,8 +257,11 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _isCheckedWarningLevel, value);
-                ClickWarningLogLevel?.Execute(null);
-                Settings.Default["LogLevel"] = "Warning";
+                if (value)
+                {
+                    ClickWarningLogLevel?.Execute(null);
+                    Settings.Default["LogLevel"] = "Warning";
+                }                
             }
         }
 
@@ -259,8 +271,11 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _isCheckedErrorLevel, value);
-                ClickErrorLogLevel?.Execute(null);
-                Settings.Default["LogLevel"] = "Error";
+                if (value)
+                {
+                    ClickErrorLogLevel?.Execute(null);
+                    Settings.Default["LogLevel"] = "Error";
+                }                
             }
         }
 
@@ -270,13 +285,24 @@ namespace SimpleDbUpdater.ViewModels
             set
             {
                 SetProperty(ref _isCheckedFatalLevel, value);
-                ClickFatalLogLevel?.Execute(null);
-                Settings.Default["LogLevel"] = "Fatal";
+                if (value)
+                {
+                    ClickFatalLogLevel?.Execute(null);
+                    Settings.Default["LogLevel"] = "Fatal";
+                }                
             }
         }
 
         public MainViewModel()
-        {  
+        {
+            ClickVerboseLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Verbose);
+            ClickDebugLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Debug);
+            ClickInformationLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Information);
+            ClickWarningLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Warning);
+            ClickErrorLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Error);
+            ClickFatalLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Fatal);
+
+            Settings.Default.Upgrade();
             SetLogLevelFromSettings();
             Logger.Information("Программа запущена.");
 
@@ -296,14 +322,7 @@ namespace SimpleDbUpdater.ViewModels
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
             AskAboutTheme = new RelayCommand(o => ReloadIfNeeding(), x => !AreScriptsExecuted);
-
-            ClickVerboseLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Verbose);
-            ClickDebugLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Debug);
-            ClickInformationLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Information);
-            ClickWarningLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Warning);
-            ClickErrorLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Error);
-            ClickFatalLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Fatal);
-            
+                                    
             StartClock();
             ProgressBarManager.NewProgressBarValue += ChangeSlider;
         }       
