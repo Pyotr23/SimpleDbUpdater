@@ -2,13 +2,15 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?include Variables.wxi?>
 	<Fragment>
-    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.SimpleDbUpdater.TargetDir)">
-      <Component Id="ProductComponent" Guid="b11556a2-e066-4393-af5c-9c9230187eb2">
-        <File Id="SimpleDbUpdater.exe" Name="SimpleDbUpdater.exe"/>
-        <File Id="SimpleDbUpdater.exe.Config" Name="SimpleDbUpdater.exe.Config"/>
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.SimpleDbUpdater.TargetDir)">      
+      <Component Id="ProductComponent" Guid="b11556a2-e066-4393-af5c-9c9230187eb2" KeyPath="yes">
+        <File Id="SimpleDbUpdater.exe" Name="SimpleDbUpdater.exe"/>        
         <File Id="FontAwesome.WPF.dll" Name="FontAwesome.WPF.dll"/>
         <File Id="Serilog.dll" Name="Serilog.dll"/>
         <File Id="Serilog.Sinks.File.dll" Name="Serilog.Sinks.File.dll"/>
+      </Component>
+      <Component Id="Config" Guid="*" Permanent="yes">
+        <File Id="SimpleDbUpdater.exe.Config" Name="SimpleDbUpdater.exe.Config"/>
       </Component>
     </DirectoryRef>    
 	</Fragment>

@@ -73,7 +73,7 @@ namespace SimpleDbUpdater.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Server=.\\SQLEXPRESS; Database=Sitro; Trusted_connection=False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Server=.\\SQLEXPRESS; Database=DbName; Trusted_connection=False")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));

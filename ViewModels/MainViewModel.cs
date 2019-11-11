@@ -5,7 +5,6 @@ using Serilog.Core;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -359,7 +358,7 @@ namespace SimpleDbUpdater.ViewModels
             IsDarkTheme = !IsDarkTheme;
             if (result == MessageBoxResult.Yes)
             {
-                
+                Logger.Information("Программа будет перезапущена для смены темы интерфейса.");
                 Application.Current.Shutdown();
                 WinForms.Application.Restart();
             }            
@@ -367,11 +366,13 @@ namespace SimpleDbUpdater.ViewModels
 
         private void OpenFolder(string folderPath)
         {
+            Logger.Debug("Выбор пути папки с файлами.");
             Process.Start(folderPath);
         }
 
         private void StartClock()
         {
+            Logger.Debug("Подготовка и запуск ежесекундного оспроса.");
             var dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
@@ -473,14 +474,6 @@ namespace SimpleDbUpdater.ViewModels
             return !string.IsNullOrEmpty(matchValue);
         }
 
-        //private static void SaveAppSetting(string key, string value)
-        //{
-        //    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-        //    config.AppSettings.Settings[key].Value = value;
-        //    config.Save(ConfigurationSaveMode.Full, true);
-        //    ConfigurationManager.RefreshSection("appSettings");
-        //}
-
         private string GetScriptsFolderPath()
         {
             using (var dialog = new WinForms.FolderBrowserDialog())
@@ -530,6 +523,7 @@ namespace SimpleDbUpdater.ViewModels
                             catch (Exception ex)
                             {                                
                                 error = $"Ошибка, скрипт \"{Path.GetFileName(filePath)}\"\n{ex.Message}";
+                                Logger.Warning("Ошибка выполнения скрипта.");
                                 return error;
                             }
                         }
