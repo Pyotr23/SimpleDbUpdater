@@ -20,6 +20,7 @@ using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
 using SimpleDbUpdater.Loggers;
 using SimpleDbUpdater.Properties;
+using Notifications.Wpf;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -300,8 +301,7 @@ namespace SimpleDbUpdater.ViewModels
             ClickWarningLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Warning);
             ClickErrorLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Error);
             ClickFatalLogLevel = new RelayCommand(o => UpdaterLogger.LogEventLevel = LogEventLevel.Fatal);
-
-            Settings.Default.Upgrade();
+            
             SetLogLevelFromSettings();
             Logger.Information("Программа запущена.");
 
@@ -358,6 +358,8 @@ namespace SimpleDbUpdater.ViewModels
             IsDarkTheme = !IsDarkTheme;
             if (result == MessageBoxResult.Yes)
             {
+                Settings.Default.Save();
+                Settings.Default.Reload();
                 Logger.Information("Программа будет перезапущена для смены темы интерфейса.");
                 Application.Current.Shutdown();
                 WinForms.Application.Restart();
@@ -418,6 +420,13 @@ namespace SimpleDbUpdater.ViewModels
                 if (!string.IsNullOrEmpty(errorMessage))
                     ShowMessageBox(errorMessage);
             }
+
+            var notificationManager = new NotificationManager();
+            notificationManager.Show(new NotificationContent
+            {
+                Title = "Обновление базы данных окончено.",                
+                Type = NotificationType.Success
+            });
 
             Logger.Information("Обновление базы данных окончено.");
             AreScriptsExecuted = false;
