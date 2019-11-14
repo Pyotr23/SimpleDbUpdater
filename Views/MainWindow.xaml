@@ -60,10 +60,12 @@
                 <Button Width="18" Height="18" Background="{Binding Path=ConnectionColor}" Style="{StaticResource ConnectionButton}"/>
                 <TextBox Text="{Binding Path=DatabaseName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Width="150" IsReadOnly="True"></TextBox>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="10, 0, 10, 0">
+            <DockPanel Margin="10, 0, 10, 0" LastChildFill="False">
                 <Label Content="Удаление скриптов после выполнения:"/>
                 <CheckBox VerticalAlignment="Center" IsChecked="{Binding DeleteScriptsAfterExecute}"/>
-            </StackPanel>
+                <Button Name="btnOpenLogs" Content="Логи" Width="50" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                        DockPanel.Dock="Right" Command="{Binding OpenLog}"/>
+            </DockPanel>            
             <Grid Margin="10, 0, 10, 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="94*"/>

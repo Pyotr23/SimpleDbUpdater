@@ -21,6 +21,7 @@ using WinForms = System.Windows.Forms;
 using SimpleDbUpdater.Loggers;
 using SimpleDbUpdater.Properties;
 using Notifications.Wpf;
+using System.Reflection;
 
 namespace SimpleDbUpdater.ViewModels
 {
@@ -46,6 +47,7 @@ namespace SimpleDbUpdater.ViewModels
         private Visibility _spinnerVisibility = Visibility.Hidden;
         private bool _areScriptsExecuted = false;
         private bool _deleteScriptsAfterExecute;
+        private string _logFilePath = string.Empty;
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -65,6 +67,7 @@ namespace SimpleDbUpdater.ViewModels
         public ICommand ClickWarningLogLevel { get; }
         public ICommand ClickErrorLogLevel { get; }
         public ICommand ClickFatalLogLevel { get; }
+        public ICommand OpenLog { get; }
 
         public bool DeleteScriptsAfterExecute
         {
@@ -321,10 +324,23 @@ namespace SimpleDbUpdater.ViewModels
             OpenScriptsFolderPath = new RelayCommand(o => OpenFolder(ScriptsFolderPath), x => Directory.Exists(ScriptsFolderPath));
             SetScriptsFolderPath = new RelayCommand(o => ScriptsFolderPath = GetScriptsFolderPath());
             AskAboutTheme = new RelayCommand(o => ReloadIfNeeding(), x => !AreScriptsExecuted);
+            OpenLog = new RelayCommand(o => OpenLogFile(), x => IsLogFileExist());
                                     
             StartClock();
             ProgressBarManager.NewProgressBarValue += ChangeSlider;
         }       
+
+        private void OpenLogFile()
+        {
+            Process.Start(_logFilePath);
+        }
+
+        private bool IsLogFileExist()
+        {
+            string currentFilePath = Assembly.GetExecutingAssembly().Location;
+            _logFilePath = Path.ChangeExtension(currentFilePath, "log");
+            return File.Exists(_logFilePath);
+        }
 
         private void SetLogLevelFromSettings()
         {
