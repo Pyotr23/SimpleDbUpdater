@@ -48,6 +48,7 @@ namespace SimpleDbUpdater.ViewModels
         private bool _areScriptsExecuted = false;
         private bool _deleteScriptsAfterExecute;
         private string _logFilePath = string.Empty;
+        private NotificationManager _notificationManager = new NotificationManager();
 
         Regex _regexDatabase = new Regex(@"(?<=Database\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
         Regex _regexInitialCatalog = new Regex(@"(?<=Initial Catalog\s*=\s*)\S+(?=\s*;)", RegexOptions.IgnoreCase);
@@ -428,30 +429,47 @@ namespace SimpleDbUpdater.ViewModels
                         ShowRerunMessageBox(errorMessage);
                 }
                 else
-                    ShowMessageBox(errorMessage);
+                    ShowErrorMessageBox(errorMessage);
             }
             else
             {
                 errorMessage = GetErrorAfterExecutingScripts(sqlFileWithCorrectNames, DeleteScriptsAfterExecute, isRerun);
                 if (!string.IsNullOrEmpty(errorMessage))
-                    ShowMessageBox(errorMessage);
+                    ShowErrorMessageBox(errorMessage);
             }
 
-            var notificationManager = new NotificationManager();
-            notificationManager.Show(new NotificationContent
+            if (string.IsNullOrWhiteSpace(errorMessage))
             {
-                Title = "Обновление базы данных окончено.",                
-                Type = NotificationType.Success
-            });
+                bool successUpdate = true;
+                ShowNotification(successUpdate);
+            }
 
             Logger.Information("Обновление базы данных окончено.");
             AreScriptsExecuted = false;
         }
 
-        private void ShowMessageBox(string errorMessage)
+        private void ShowNotification(bool isSuccess)
+        {
+            if (isSuccess)
+                _notificationManager.Show(new NotificationContent
+                {
+                    Title = "Обновление базы данных успешно выполнено.",
+                    Type = NotificationType.Success
+                });
+            else
+                _notificationManager.Show(new NotificationContent
+                {
+                    Title = "Обновление базы данных закончилось с ошибкой.",
+                    Type = NotificationType.Error
+                });
+        }
+
+        private void ShowErrorMessageBox(string errorMessage)
         {
             string errorTitle = new string(errorMessage.TakeWhile(c => c != '\n').ToArray());
             string error = new string(errorMessage.SkipWhile(c => c != '\n').Skip(1).ToArray());
+            bool successUpdate = false;
+            ShowNotification(successUpdate);
             MessageBox.Show(error, errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
@@ -506,8 +524,7 @@ namespace SimpleDbUpdater.ViewModels
                 var result = dialog.ShowDialog();
                 if (result == WinForms.DialogResult.OK)
                     return dialog.SelectedPath;
-                else
-                    return string.Empty;
+                return ScriptsFolderPath;
             }
         }
 
